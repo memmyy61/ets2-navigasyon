@@ -8,6 +8,10 @@
 #   ETS2_DIR=...      Oyun klasörü (varsayılan: Steam'in C: sürücüsündeki yeri)
 #   YENIDEN_OKU=1     Oyun dosyalarını baştan oku (oyun güncellemesi / yeni DLC sonrası)
 #   SADECE_WEB=1      Harita verisine dokunma, sadece web uygulamasını yeniden derle
+#   HEPSINI_YENIDEN=1 Tamamlanmış adımları da baştan yap
+#
+# Yarıda kalırsa (çökme vb.) tekrar çalıştırın: biten adımlar atlanır.
+# Tüm çıktı out/veri-uret.log dosyasına da yazılır.
 #
 # Çıktılar:
 #   out/europe-navigation.zip  -> navigasyon sunucusunun verisi
@@ -22,15 +26,36 @@ O=out
 W=out/web
 R=packages/clis/generator/resources
 
-# Bellek: Ubuntu'ya ayrılan RAM'in %75'i kadar izin ver (büyük harita için gerekli).
-MEM_MB=$(free -m | awk '/^Mem:/{print $2}')
-HEAP_MB=$(( MEM_MB * 3 / 4 ))
-export NODE_OPTIONS="--max-old-space-size=${HEAP_MB}"
-
-adim() { echo; echo "==> $*"; }
-
-echo "Ubuntu'ya ayrılan bellek: ${MEM_MB} MB (Node sınırı: ${HEAP_MB} MB)"
 mkdir -p "$P" "$W"
+exec > >(tee -a out/veri-uret.log) 2>&1
+echo
+echo "######## $(date '+%F %T') veri-uret.sh başladı ########"
+
+# Bellek: Node'a Ubuntu'ya ayrılan RAM'in %60'ı kadar izin ver. Geri kalanı
+# harita parçalarını yazan tippecanoe ve sistem için bırakılır.
+MEM_MB=$(free -m | awk '/^Mem:/{print $2}')
+SWAP_MB=$(free -m | awk '/^Swap:/{print $2}')
+HEAP_MB=$(( MEM_MB * 6 / 10 ))
+export NODE_OPTIONS="--max-old-space-size=${HEAP_MB}"
+echo "Ubuntu'ya ayrılan bellek: ${MEM_MB} MB, swap: ${SWAP_MB} MB (Node sınırı: ${HEAP_MB} MB)"
+
+adim() { echo; echo "==> $(date '+%T') $*"; }
+
+# Bir adımı çalıştırır ve başarılı olursa işaretler; işaretli adımlar atlanır.
+#   calistir <ad> <açıklama> <komut...>
+calistir() {
+  local ad="$1" aciklama="$2"
+  shift 2
+  local isaret="$O/.tamam-$ad"
+  if [ -f "$isaret" ] && [ "${HEPSINI_YENIDEN:-0}" != "1" ]; then
+    echo "(atlandı, zaten tamam: $aciklama)"
+    return
+  fi
+  adim "$aciklama"
+  rm -f "$isaret"
+  "$@"
+  touch "$isaret"
+}
 
 if [ "${SADECE_WEB:-0}" != "1" ]; then
   if [ "${YENIDEN_OKU:-0}" = "1" ] || [ ! -f "$P/europe-roads.json" ]; then
@@ -41,32 +66,36 @@ if [ "${SADECE_WEB:-0}" != "1" ]; then
       exit 1
     fi
     npx parser -i "$ETS2_DIR" -o "$P"
+    # oyun verisi değişti: sonraki adımlar yeniden yapılmalı
+    rm -f "$O"/.tamam-*
   else
     echo "Oyun verisi zaten okunmuş ($P). Baştan okumak için: YENIDEN_OKU=1 ./scripts/veri-uret.sh"
   fi
 
-  if [ ! -f "$O/world.pmtiles" ]; then
-    adim "Dünya altlık haritası"
-    tippecanoe -q -Z4 -z8 -y name -b 10 -X -o "$O/world.pmtiles" \
+  calistir dunya "Dünya altlık haritası" \
+    tippecanoe -q -f -Z4 -z8 -y name -b 10 -X -o "$O/world.pmtiles" \
       "$R/water.geojson" "$R/countries.geojson" "$R/states.geojson"
-  fi
 
-  adim "ETS2 harita parçaları (en uzun adım)"
-  npx generator map -h -m europe -i "$P" -o "$O" --dataOverridesPath "$R/trucksim-overrides.json"
+  calistir harita "ETS2 harita parçaları (en uzun adım)" \
+    npx generator map -h -m europe -i "$P" -o "$O" --dataOverridesPath "$R/trucksim-overrides.json"
 
-  adim "Bina izleri"
-  npx generator footprints -m europe -i "$P" -o "$O"
+  calistir binalar "Bina izleri" \
+    npx generator footprints -m europe -i "$P" -o "$O"
 
-  adim "Simgeler"
-  npx generator spritesheet -m europe -i "$P" -o "$O"
+  calistir simgeler "Simgeler" \
+    npx generator spritesheet -m europe -i "$P" -o "$O"
 
-  adim "Köy etiketleri ve arama verisi"
-  npx generator ets2-villages -i "$P" -o "$O"
-  npx generator search -m europe -i "$P" -o "$O"
+  calistir koyler "Köy etiketleri" \
+    npx generator ets2-villages -i "$P" -o "$O"
 
-  adim "Yol ağı (rota hesaplama için)"
-  npx generator graph -m europe -i "$P" -o "$O" -c
-  npx generator roundabouts -m europe -i "$P" -g "$O" -o "$O" -c
+  calistir arama "Arama verisi" \
+    npx generator search -m europe -i "$P" -o "$O"
+
+  calistir yolagi "Yol ağı (rota hesaplama için)" \
+    npx generator graph -m europe -i "$P" -o "$O" -c
+
+  calistir donerkavsak "Döner kavşaklar" \
+    npx generator roundabouts -m europe -i "$P" -g "$O" -o "$O" -c
 
   adim "Navigasyon veri paketi"
   # ATS'ye özel ek etiketler ETS2'de yok; sunucu için boş dosya yeterli.
@@ -92,4 +121,5 @@ cp "$O/world.pmtiles" "$O/ets2.pmtiles" "$O/ets2-footprints.pmtiles" \
   "$O"/sprites*.png "$O"/sprites*.json "$O/ets2-villages.geojson" "$W/"
 
 echo
-echo "Tamamlandı. Sunucuyu başlatmak için: ./scripts/baslat.sh"
+echo "######## $(date '+%F %T') Tamamlandı ########"
+echo "Sunucuyu başlatmak için: ./scripts/baslat.sh"
