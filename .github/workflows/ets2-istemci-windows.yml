@@ -1,8 +1,9 @@
 name: ETS2 Navigasyon - Windows telemetri istemcisi
 
 # Builds the Windows telemetry client (reads ETS2 telemetry and sends it to the
-# navigation server running on the same PC) and publishes it as a downloadable
-# zip on the "istemci-son" release.
+# navigation server running on the same PC) and publishes it as a new numbered
+# release (istemci-vN). The newest zip is always at:
+# https://github.com/memmyy61/ets2-navigasyon/releases/latest/download/ets2-navigasyon-istemci.zip
 
 on:
   workflow_dispatch:
@@ -62,17 +63,20 @@ jobs:
           name: ${{ env.BINARY_NAME }}-windows
           path: ${{ env.BINARY_NAME }}.zip
 
-      - name: Publish to "istemci-son" release
+      - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: istemci-son
-          name: Telemetri istemcisi (son surum)
+          tag_name: istemci-v${{ github.run_number }}
+          name: Telemetri istemcisi v${{ github.run_number }}
           target_commitish: ${{ github.sha }}
-          prerelease: true
+          make_latest: true
           body: |
-            ETS2 Navigasyon Windows telemetri istemcisi.
+            ETS2 Navigasyon Windows telemetri istemcisi, surum v${{ github.run_number }}.
+
+            Degisiklik: ${{ github.event.head_commit.message }}
+
             Commit: ${{ github.sha }}
 
-            Zip'i indirin, bir klasore cikarin ve BASLAT.bat dosyasini calistirin.
+            Kurulum: zip'i indirin, bir klasore cikarin (eski dosyalarin uzerine yazin)
+            ve BASLAT.bat dosyasini calistirin.
           files: ${{ env.BINARY_NAME }}.zip
-          overwrite_files: true

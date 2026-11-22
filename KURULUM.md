@@ -76,9 +76,10 @@ sürümlerinden indirip `Win64\scs-telemetry.dll` dosyasını
 
 ## 5. Telemetri istemcisini indir (Windows)
 
-[istemci-son](https://github.com/memmyy61/ets2-navigasyon/releases/tag/istemci-son)
-sayfasından `ets2-navigasyon-istemci.zip` dosyasını indirip bir klasöre çıkarın
-(örneğin `C:\ETS2Navigasyon`).
+En son sürümü şu linkten indirip bir klasöre çıkarın (örneğin `C:\ETS2Navigasyon`):
+https://github.com/memmyy61/ets2-navigasyon/releases/latest/download/ets2-navigasyon-istemci.zip
+
+Tüm sürümler ve değişiklikler: https://github.com/memmyy61/ets2-navigasyon/releases
 
 ## Her oyun oturumunda
 
