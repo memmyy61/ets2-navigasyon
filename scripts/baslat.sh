@@ -24,6 +24,7 @@ export PORT
 export WEB_DIR="$PWD/out/web"
 export ALLOW_SAME_ORIGIN=true
 export RATE_LIMIT_ENABLED=false
+export WORKER_THREADS="${WORKER_THREADS:-1}"
 export LOG_LEVEL="${LOG_LEVEL:-warn}"
 
 echo "Navigasyon sunucusu başlatılıyor (harita verisinin yüklenmesi 1-2 dakika sürebilir)..."

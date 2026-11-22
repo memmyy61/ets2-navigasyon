@@ -18,6 +18,10 @@ const EnvSchema = z.object({
     .enum(['true', 'false'])
     .default('false')
     .transform(val => val === 'true'),
+  // Max worker threads per map for routing and search. Each routing worker
+  // holds its own copy of the road graph, so keep this low on machines with
+  // little memory (e.g., 1 for a single-user local server).
+  WORKER_THREADS: z.coerce.number().int().min(1).default(4),
   // Optional dir of static files (built navigator app + map tiles) to serve
   // over HTTP. Leave empty to disable static file serving.
   WEB_DIR: z.coerce.string().default(''),

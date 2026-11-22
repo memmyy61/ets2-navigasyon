@@ -4,6 +4,7 @@ import Tinypool from 'tinypool';
 import type { RoutingService } from '../../domain/actor/generate-routes';
 import type { GameContext } from '../../domain/game-context';
 import type { LookupService } from '../../domain/lookup-data';
+import { env } from '../../env';
 import type { MetricsService } from '../metrics/service';
 import type { Options } from '../workers/find-route-worker';
 
@@ -39,6 +40,9 @@ export function createRoutingService(
   metrics: MetricsService['worker'],
 ): RoutingService {
   const [atsPool, ets2Pool] = (['usa', 'europe'] as const).map(game => {
+    if (!lookups.hasData(game)) {
+      return undefined;
+    }
     const lookupData = lookups.getData({ map: game });
     const routeContext: Context = {
       nodeLUT: lookupData.graphAndMapData.tsMapData.nodes,
@@ -48,7 +52,8 @@ export function createRoutingService(
     };
 
     return new Tinypool({
-      maxThreads: 4,
+      minThreads: 1,
+      maxThreads: env.WORKER_THREADS,
       filename: new URL(
         '../workers/find-route-worker-wrapper.js',
         import.meta.url,
@@ -65,6 +70,9 @@ export function createRoutingService(
     try {
       metrics.workerCalls.inc(meta);
       const pool = opts.gameContext.map === 'usa' ? atsPool : ets2Pool;
+      if (!pool) {
+        throw new Error(`no ${opts.gameContext.map} map data loaded`);
+      }
       return (await pool.run(opts)) as Route;
     } finally {
       metrics.workerDuration.observe(meta, Date.now() - start);

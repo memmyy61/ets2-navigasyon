@@ -112,5 +112,7 @@ export interface LookupData {
 }
 
 export interface LookupService {
+  /** whether data for `map` was loaded (e.g., ETS2-only servers have no ATS data). */
+  hasData(map: GameContext['map']): boolean;
   getData(context: GameContext): LookupData;
 }
