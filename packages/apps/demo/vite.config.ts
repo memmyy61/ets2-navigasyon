@@ -1,5 +1,4 @@
 import react from '@vitejs/plugin-react';
-import eslint from 'vite-plugin-eslint';
 import viteTsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
@@ -12,7 +11,7 @@ export default defineConfig(() => {
     server: {
       open: true,
     },
-    plugins: [react(), viteTsconfigPaths(), eslint()],
+    plugins: [react(), viteTsconfigPaths()],
     test: {
       globals: true,
       environment: 'jsdom',
