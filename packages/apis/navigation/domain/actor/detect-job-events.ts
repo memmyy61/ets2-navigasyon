@@ -60,6 +60,10 @@ export function detectJobEvents(opts: {
       // or the job is for some company in some mod (also unsupported).
       // ignore for now.
       jobState = undefined;
+      console.log(
+        'yuk hedefi haritada bulunamadi (ozel tasima veya mod sirketi?):',
+        newDestKey,
+      );
     } else {
       const jobMappedData =
         telemetry.game.game.name === 'ats'
@@ -78,6 +82,7 @@ export function detectJobEvents(opts: {
         // unknown country (e.g., because of mod, or unknown DLC).
         // ignore for now.
         // TODO log unknown country?
+        console.log('yuk hedefinin ulkesi bilinmiyor:', city.countryToken);
         jobState = undefined;
       } else {
         const country = assertExists(

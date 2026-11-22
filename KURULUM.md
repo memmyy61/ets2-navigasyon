@@ -91,11 +91,13 @@ Tüm sürümler ve değişiklikler: https://github.com/memmyy61/ets2-navigasyon/
 
 ## Güncelleme
 
+Sunucu kapalıyken (Ctrl+C):
+
 ```bash
 cd ~/ets2-navigasyon
-git pull
-npm install
-SADECE_WEB=1 ./scripts/veri-uret.sh
+./scripts/guncelle.sh
+./scripts/baslat.sh
 ```
 
-İstemci değiştiyse yeni zip'i 5. adımdaki sayfadan tekrar indirin.
+`guncelle.sh` gerekiyorsa telefon uygulamasını kendisi yeniden derler. Windows
+istemcisi sadece kendi kodu değiştiğinde yenilenir; öyleyse script ekrana yazar.

@@ -17,6 +17,7 @@ import { detectThemeModeEvents } from './actor/detect-theme-mode-events';
 import type { TrailerEventEmitter } from './actor/detect-trailer-events';
 import { detectTrailerEvents } from './actor/detect-trailer-events';
 import type { RouteWithLookup, RoutingService } from './actor/generate-routes';
+import { generateRoutes } from './actor/generate-routes';
 import type { DomainEventSink } from './events';
 import type { GameContext } from './game-context';
 import type { GraphAndMapData, GraphMappedData } from './lookup-data';
@@ -145,6 +146,54 @@ export class SessionActorImpl implements SessionActor {
     this.mapEventEmitter.on('update', () => {
       this.setActiveRoute(undefined);
       this.unpauseRouteEvents();
+    });
+
+    // ETS2 Navigasyon: when a job is picked up, automatically route to its
+    // destination using the "fastest" strategy (prefers highways).
+    let autoRoutedTo: string | undefined;
+    this.jobEventEmitter.on('update', job => {
+      if (job == null) {
+        autoRoutedTo = undefined;
+        return;
+      }
+      if (job.toNodeUid === autoRoutedTo) {
+        return;
+      }
+      const telemetry = this.readTelemetry();
+      const gameContext = this.gameContext;
+      if (!telemetry || !gameContext) {
+        return;
+      }
+      autoRoutedTo = job.toNodeUid;
+      console.log('yuk algilandi, otomatik rota:', job.destination.city.name);
+      generateRoutes(BigInt('0x' + job.toNodeUid), ['fastest'], {
+        graphAndMapData: getGraphAndMapData(gameContext),
+        routing,
+        truck: telemetry.truck,
+        domainEventSink: this.events,
+      })
+        .then(routes => {
+          // ignore if the job changed while the route was being computed.
+          if (
+            routes.length > 0 &&
+            this.readJobState()?.toNodeUid === job.toNodeUid
+          ) {
+            this.setActiveRoute(routes[0]);
+          } else if (routes.length === 0) {
+            console.log('otomatik rota bulunamadi');
+          }
+        })
+        .catch((err: unknown) => {
+          autoRoutedTo = undefined;
+          this.events.publish({
+            type: 'error',
+            code: this.code,
+            message:
+              'auto-route failed: ' +
+              (err instanceof Error ? err.message : 'unknown error'),
+            data: err,
+          });
+        });
     });
   }
 
