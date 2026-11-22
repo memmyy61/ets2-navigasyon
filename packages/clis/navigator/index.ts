@@ -12,6 +12,7 @@ import {
   startTelemetryLoop,
 } from './helpers';
 import { getLanAddresses } from './lan';
+import { startLanProxy } from './lan-proxy';
 
 async function main() {
   //checkIsPluginInstalled();
@@ -19,6 +20,13 @@ async function main() {
   const healthCheck = await checkIsServerUp(healthUrl);
   if (!healthCheck.ok) {
     process.exit(1);
+  }
+
+  // ETS2 Navigasyon: let phones on the local network reach the server.
+  if (process.platform === 'win32' && process.env.NAV_LAN_PROXY !== 'false') {
+    if (await startLanProxy()) {
+      console.log('yerel ag yonlendirmesi acik (port 62840).');
+    }
   }
 
   // TODO add simple check if client is outdated

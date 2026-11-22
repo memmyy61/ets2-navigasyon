@@ -51,17 +51,21 @@ Oyun güncellemesinden sonra: `YENIDEN_OKU=1 ./scripts/veri-uret.sh`
 
 ## 3. Windows ağ ayarı (bir kez)
 
-Telefonun Ubuntu içindeki sunucuya ulaşabilmesi için. **PowerShell'i yönetici olarak**
-açın ve şunları çalıştırın:
+Telefonun sunucuya ağ üzerinden ulaşabilmesini telemetri istemcisi (BASLAT.bat)
+sağlar: PC'nin tüm ağ adreslerinde 62840'ı dinleyip Ubuntu'daki sunucuya aktarır.
+WSL normal (NAT) modda kalmalı. **PowerShell'i yönetici olarak** açıp bir kez:
 
 ```powershell
-$f="$env:USERPROFILE\.wslconfig"; if (!(Test-Path $f) -or !(Select-String -Path $f -Pattern 'networkingMode' -Quiet)) { Add-Content $f "[wsl2]`nnetworkingMode=mirrored" }
-New-NetFirewallHyperVRule -Name ETS2Nav -DisplayName "ETS2 Navigasyon" -Direction Inbound -VMCreatorId '{40E0AC32-46A5-438A-A0B2-2B479E8F2E90}' -Protocol TCP -LocalPorts 62840 -Action Allow
+Set-Content "$env:USERPROFILE\.wslconfig" "[wsl2]`nnetworkingMode=nat"
 New-NetFirewallRule -DisplayName "ETS2 Navigasyon" -Direction Inbound -Protocol TCP -LocalPort 62840 -Action Allow
 wsl --shutdown
 ```
 
-Sonra Ubuntu penceresini yeniden açın.
+BASLAT.bat ilk açılışta Windows güvenlik duvarı izni sorarsa "İzin ver" deyin.
+
+Yurt / kamu Wi-Fi'lerinde (ör. GSBWifi) cihazlar birbirini göremez. O zaman ya
+PC'nin **Mobil etkin nokta**'sını açıp telefonu ona bağlayın (adres
+`http://192.168.137.1:62840`), ya da aşağıdaki USB yöntemini kullanın.
 
 ## 4. Telemetri eklentisi (bir kez)
 
@@ -102,6 +106,12 @@ engeller. O zaman telefonu kabloyla bağlayın:
    aracı kendisi indirir). Telefonda çıkan izin sorusuna "her zaman izin ver" deyin.
 4. Telefonda tarayıcıda `http://localhost:62840` adresini açın. İlk seferde
    BASLAT.bat penceresindeki eşleştirme kodunu girin.
+
+USB hata ayıklama hakkında: Geliştirici seçenekleri kapatılırsa USB hata ayıklama
+da kapanır. Açık kalması güvenlik açısından sorun değildir (yalnızca izin verilen
+bilgisayarlar bağlanabilir; tanımadığınız bir bilgisayarda çıkan izin sorusunu
+reddedin). Bazı banka uygulamaları geliştirici seçenekleri açıkken çalışmayabilir:
+oyun bitince USB hata ayıklamayı kapatmak yeterli.
 
 ## Güncelleme
 
