@@ -11,6 +11,16 @@ const EnvSchema = z.object({
     .default('false')
     .transform(val => val === 'true'),
   ALLOWED_ORIGIN: z.coerce.string().url().default('http://localhost:5173'),
+  // When true, navigator websocket connections are also accepted from any
+  // page served by this same server (same host:port), e.g. a phone on the
+  // local network opening http://192.168.x.x:62840.
+  ALLOW_SAME_ORIGIN: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform(val => val === 'true'),
+  // Optional dir of static files (built navigator app + map tiles) to serve
+  // over HTTP. Leave empty to disable static file serving.
+  WEB_DIR: z.coerce.string().default(''),
 
   RATE_LIMIT_ENABLED: z
     .enum(['true', 'false'])
@@ -35,7 +45,6 @@ const EnvSchema = z.object({
     .default('info'),
 });
 
-console.log('raw, process.env', process.env);
 const parsed = EnvSchema.safeParse(process.env);
 if (!parsed.success) {
   console.error('Invalid environment variables');

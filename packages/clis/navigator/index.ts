@@ -1,7 +1,7 @@
 #!/usr/bin/env -S npx tsx
 
 import { renderANSI } from 'uqr';
-import { apiUrl, healthUrl, navigatorUrl, NODE_ENV } from './constants';
+import { apiUrl, healthUrl, navigatorUrl } from './constants';
 import type { TelemetryReaderOptions } from './helpers';
 import {
   checkIsServerUp,
@@ -11,6 +11,7 @@ import {
   getTelemetryId,
   startTelemetryLoop,
 } from './helpers';
+import { getLanNavigatorUrls } from './lan';
 
 async function main() {
   //checkIsPluginInstalled();
@@ -26,14 +27,14 @@ async function main() {
     onError: (maybeEvent: Event | undefined) => {
       console.error(maybeEvent);
       console.error(
-        'error while trying to connect to server. try again later.',
+        'sunucuya baglanirken hata olustu. sunucunun acik oldugundan emin olun.',
       );
       process.exit(8);
     },
     onClose: (maybeCause: { code?: number } | undefined) => {
       console.log('socket closed:', maybeCause);
       if (maybeCause?.code === 1001) {
-        console.log('the server shut down.');
+        console.log('sunucu kapandi.');
       }
     },
   });
@@ -50,17 +51,23 @@ async function main() {
     telemetryClient,
     telemetryId,
     onPairingCodeReceived: pairingCode => {
-      console.log(
-        `visit ${navigatorUrl} and enter pairing code:
-
-        `,
-        pairingCode,
-        '\n\n',
-      );
-      if (NODE_ENV === 'production') {
-        console.log('or scan this qr code:\n\n');
-        console.log(renderANSI(`${navigatorUrl}/?pair=${pairingCode}`));
+      const lanUrls = getLanNavigatorUrls();
+      const phoneUrl = process.env.NAV_URL ?? lanUrls[0] ?? navigatorUrl;
+      console.log('\n========================================');
+      console.log(' ETS2 Navigasyon - telefonu baglama');
+      console.log('========================================\n');
+      console.log('Telefonda su QR kodu okutun:\n');
+      console.log(renderANSI(`${phoneUrl}/?pair=${pairingCode}`));
+      console.log('\nveya telefon tarayicisinda su adresi acin:');
+      console.log('   ', phoneUrl);
+      if (lanUrls.length > 1) {
+        console.log(
+          '(acilmazsa digerlerini deneyin:',
+          lanUrls.slice(1).join(', '),
+          ')',
+        );
       }
+      console.log('\nve su eslestirme kodunu girin:   ', pairingCode, '\n');
     },
   });
   // at this point, client is authenticated and can start sending telemetry.
@@ -68,7 +75,7 @@ async function main() {
   telemetryClient.subscribeToPairingCodes.subscribe(void 0, {
     onData: pairingCode =>
       console.log(
-        'to connect an additional device, use pairing code:',
+        'baska bir cihaz baglamak icin eslestirme kodu:',
         pairingCode,
       ),
     onError: err => {

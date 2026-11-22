@@ -43,7 +43,8 @@ export async function handleUpgrade(
     case '/navigator':
     case '/navigator?connectionParams=1':
       maybeClientHeadersOk =
-        req.headers.origin === env.ALLOWED_ORIGIN &&
+        (req.headers.origin === env.ALLOWED_ORIGIN ||
+          (env.ALLOW_SAME_ORIGIN && isSameOrigin(req))) &&
         req.headers['user-agent'] != null &&
         req.headers['user-agent'] !== 'node';
       break;
@@ -105,4 +106,16 @@ function rejectUpgrade(socket: Duplex, status: number, message: string) {
     `HTTP/1.1 ${status} ${message}\r\n` + 'Connection: close\r\n' + '\r\n',
   );
   socket.destroy();
+}
+
+function isSameOrigin(req: IncomingMessage): boolean {
+  const { origin, host } = req.headers;
+  if (origin == null || host == null) {
+    return false;
+  }
+  try {
+    return new URL(origin).host === host;
+  } catch {
+    return false;
+  }
 }

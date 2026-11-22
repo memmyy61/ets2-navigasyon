@@ -1,5 +1,4 @@
 import react from '@vitejs/plugin-react';
-import eslint from 'vite-plugin-eslint';
 import { VitePWA } from 'vite-plugin-pwa';
 import viteTsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
@@ -16,7 +15,6 @@ export default defineConfig(() => {
     plugins: [
       react(),
       viteTsconfigPaths(),
-      eslint(),
       VitePWA({
         disable: true,
         selfDestroying: true,

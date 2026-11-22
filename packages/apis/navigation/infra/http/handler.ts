@@ -1,6 +1,8 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 import { env } from '../../env';
 import type { Services } from '../services';
+import { serveFonts } from './fonts';
+import { serveStatic } from './static';
 
 export function createHttpHandler({ services }: { services: Services }) {
   return (req: IncomingMessage, res: ServerResponse) => {
@@ -19,6 +21,13 @@ export function createHttpHandler({ services }: { services: Services }) {
       }
       res.writeHead(403);
       res.end();
+      return;
+    }
+
+    if (
+      env.WEB_DIR &&
+      (serveFonts(env.WEB_DIR, req, res) || serveStatic(env.WEB_DIR, req, res))
+    ) {
       return;
     }
 

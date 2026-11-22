@@ -18,11 +18,7 @@ export interface TelemetryIdManager {
   }>;
 }
 
-const defaultConfigDir = path.join(
-  os.homedir(),
-  '.config',
-  'trucksim-navigator',
-);
+const defaultConfigDir = path.join(os.homedir(), '.config', 'ets2-navigasyon');
 
 export function makeTelemetryIdManager(
   configDir: string = defaultConfigDir,

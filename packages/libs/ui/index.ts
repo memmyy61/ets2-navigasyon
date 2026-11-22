@@ -20,11 +20,20 @@ export {
   StateCode,
 } from './SceneryTownSource';
 
+// Apps can serve font glyphs themselves (e.g., for offline / local network
+// use) by setting VITE_GLYPHS_URL, e.g. `/fonts/{fontstack}/{range}.pbf`.
+const glyphsUrlOverride = (
+  import.meta as unknown as { env?: Record<string, string | undefined> }
+).env?.VITE_GLYPHS_URL;
+
 const baseMapStyle: StyleSpecification = {
   version: 8,
   // free font glyphs, required when adding text-fields.
   // https://github.com/openmaptiles/fonts
-  glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
+  glyphs:
+    glyphsUrlOverride != null && glyphsUrlOverride !== ''
+      ? glyphsUrlOverride
+      : 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
   // sources and layers are empty because they're declared as children
   // of consuming `MapGl` components.
   sources: {},
@@ -42,6 +51,13 @@ const styleSpecificationProxyHandler: ProxyHandler<StyleSpecification> = {
       /^\/\w/.exec(target.sprite.toString())
     ) {
       return window.location.origin + target.sprite;
+    }
+    if (
+      propertyKey === 'glyphs' &&
+      typeof target.glyphs == 'string' &&
+      target.glyphs.startsWith('/')
+    ) {
+      return window.location.origin + target.glyphs;
     }
     return Reflect.get(target, propertyKey, receiver) as unknown;
   },

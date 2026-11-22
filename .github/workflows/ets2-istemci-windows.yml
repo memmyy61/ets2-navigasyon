@@ -1,0 +1,78 @@
+name: ETS2 Navigasyon - Windows telemetri istemcisi
+
+# Builds the Windows telemetry client (reads ETS2 telemetry and sends it to the
+# navigation server running on the same PC) and publishes it as a downloadable
+# zip on the "istemci-son" release.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['gelistirme', 'main']
+    paths:
+      - 'packages/clis/navigator/**'
+      - 'packages/apis/navigation/types.ts'
+      - '.github/workflows/ets2-istemci-windows.yml'
+
+permissions:
+  contents: write
+
+env:
+  BINARY_NAME: ets2-navigasyon-istemci
+  NAV_DIR: packages/clis/navigator
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build -w ${{ env.NAV_DIR }} '--' --outfile dist/${{ env.BINARY_NAME }}
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $dir = "${{ env.NAV_DIR }}/dist"
+          @(
+            '@echo off',
+            'chcp 65001 > nul',
+            'title ETS2 Navigasyon - telemetri istemcisi',
+            'cd /d "%~dp0"',
+            '${{ env.BINARY_NAME }}.exe %*',
+            'echo.',
+            'echo Istemci kapandi. Pencereyi kapatmak icin bir tusa basin.',
+            'pause > nul'
+          ) | Set-Content -Encoding ascii "$dir/BASLAT.bat"
+          Compress-Archive -Path "$dir/${{ env.BINARY_NAME }}.exe", "$dir/BASLAT.bat" -DestinationPath "${{ env.BINARY_NAME }}.zip"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BINARY_NAME }}-windows
+          path: ${{ env.BINARY_NAME }}.zip
+
+      - name: Publish to "istemci-son" release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: istemci-son
+          name: Telemetri istemcisi (son surum)
+          target_commitish: ${{ github.sha }}
+          prerelease: true
+          body: |
+            ETS2 Navigasyon Windows telemetri istemcisi.
+            Commit: ${{ github.sha }}
+
+            Zip'i indirin, bir klasore cikarin ve BASLAT.bat dosyasini calistirin.
+          files: ${{ env.BINARY_NAME }}.zip
+          overwrite_files: true

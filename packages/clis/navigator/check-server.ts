@@ -1,5 +1,5 @@
 export async function checkIsServerUp(healthUrl: string) {
-  console.log('checking', healthUrl);
+  console.log('sunucu kontrol ediliyor:', healthUrl);
 
   let ok = false;
   let message = '';
@@ -17,7 +17,10 @@ export async function checkIsServerUp(healthUrl: string) {
     }
   }
   if (!ok) {
-    console.error('server is down. try again later.');
+    console.error(
+      'Navigasyon sunucusuna ulasilamadi. Once Ubuntu penceresinde ' +
+        'sunucuyu baslatin (./scripts/baslat.sh), sonra tekrar deneyin.',
+    );
   }
 
   return { ok, message };

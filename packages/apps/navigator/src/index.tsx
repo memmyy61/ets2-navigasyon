@@ -33,7 +33,11 @@ const appClient = createTRPCProxyClient<AppRouter>({
   links: [
     wsLink({
       client: createWSClient({
-        url: import.meta.env.VITE_WS_URL,
+        // When VITE_WS_URL is blank, connect back to the server that served
+        // this page (e.g. http://192.168.x.x:62840 -> ws://192.168.x.x:62840).
+        url:
+          import.meta.env.VITE_WS_URL ||
+          `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/navigator`,
         connectionParams: () => {
           const viewerId = localStorage.getItem('viewerId');
           return viewerId ? { viewerId } : null;
@@ -81,5 +85,6 @@ root.render(
 );
 
 function ensureMap(s: string | null): 'usa' | 'europe' {
-  return s === 'europe' ? 'europe' : 'usa';
+  // ETS2 navigasyon: default to the europe map.
+  return s === 'usa' ? 'usa' : 'europe';
 }
