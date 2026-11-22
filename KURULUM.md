@@ -89,6 +89,20 @@ Tüm sürümler ve değişiklikler: https://github.com/memmyy61/ets2-navigasyon/
 4. İlk seferde istemci bir QR kod gösterir. Telefonla okutun (veya gösterilen adresi
    açıp eşleştirme kodunu girin). Sonraki seferlerde telefon otomatik bağlanır.
 
+## Ağ cihazları birbirine bağlamıyorsa: USB kablosu
+
+Yurt / kamu Wi-Fi'leri (ör. GSBWifi) aynı ağdaki cihazların birbirini görmesini
+engeller. O zaman telefonu kabloyla bağlayın:
+
+1. Telefonda bir kez: **Ayarlar → Telefon hakkında → Yazılım bilgileri → Yapım
+   numarası**'na 7 kez dokunun (geliştirici seçenekleri açılır). Sonra
+   **Ayarlar → Geliştirici seçenekleri → USB hata ayıklama**'yı açın.
+2. Telefonu USB kablosuyla PC'ye takın (veri aktarabilen bir kablo olmalı).
+3. `C:\ETS2Navigasyon\TELEFON-USB.bat` dosyasını çalıştırın (ilk seferde gerekli
+   aracı kendisi indirir). Telefonda çıkan izin sorusuna "her zaman izin ver" deyin.
+4. Telefonda tarayıcıda `http://localhost:62840` adresini açın. İlk seferde
+   BASLAT.bat penceresindeki eşleştirme kodunu girin.
+
 ## Güncelleme
 
 Sunucu kapalıyken (Ctrl+C):

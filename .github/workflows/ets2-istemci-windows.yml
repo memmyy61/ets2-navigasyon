@@ -14,6 +14,7 @@ on:
       - 'packages/clis/navigator/**'
       - 'packages/apis/navigation/types.ts'
       - '.github/workflows/ets2-istemci-windows.yml'
+      - 'scripts/windows/**'
 
 permissions:
   contents: write
@@ -56,7 +57,8 @@ jobs:
             'echo Istemci kapandi. Pencereyi kapatmak icin bir tusa basin.',
             'pause > nul'
           ) | Set-Content -Encoding ascii "$dir/BASLAT.bat"
-          Compress-Archive -Path "$dir/${{ env.BINARY_NAME }}.exe", "$dir/BASLAT.bat" -DestinationPath "${{ env.BINARY_NAME }}.zip"
+          Copy-Item scripts/windows/TELEFON-USB.bat "$dir/"
+          Compress-Archive -Path "$dir/${{ env.BINARY_NAME }}.exe", "$dir/BASLAT.bat", "$dir/TELEFON-USB.bat" -DestinationPath "${{ env.BINARY_NAME }}.zip"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
