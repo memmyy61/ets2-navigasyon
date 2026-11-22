@@ -9,8 +9,8 @@ import type { ForwardedRef, Ref } from 'react';
 import { forwardRef, memo } from 'react';
 import { LaneIcon } from './LaneIcon';
 
-// ETS2 Navigasyon: a lighter green than the original.
-const bgColor = Color('hsl(145,60%,40%)');
+// ETS2 Navigasyon: dark green (matches the look the user liked on the phone).
+const bgColor = Color('hsl(130,75%,17%)');
 
 type DirectionsProps = Pick<
   StepManeuver,

@@ -71,8 +71,12 @@ const MemoApp = memo(() => <App />);
 
 root.render(
   <React.StrictMode>
-    <MaterialCssVarsProvider theme={{ [MATERIAL_THEME_ID]: materialTheme }}>
-      <CssVarsProvider>
+    <MaterialCssVarsProvider
+      theme={{ [MATERIAL_THEME_ID]: materialTheme }}
+      defaultMode={'dark'}
+      modeStorageKey={'ets2nav-mui-mode'}
+    >
+      <CssVarsProvider defaultMode={'dark'} modeStorageKey={'ets2nav-joy-mode'}>
         <CssBaseline />
         <SessionGate
           appClient={appClient}

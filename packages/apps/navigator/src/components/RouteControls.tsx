@@ -87,9 +87,10 @@ export const RouteControls = (props: RouteControlsProps) => {
         borderRadius: 12,
         pb: expanded ? 2 : 0,
         height: '100%',
-        // ETS2 Navigasyon: lighter gray than the dark theme default.
-        backgroundColor: '#3d434b',
-        borderColor: '#4d545d',
+        // ETS2 Navigasyon: black bar, white text.
+        backgroundColor: '#0b0b0b',
+        borderColor: '#2a2a2a',
+        color: '#fff',
       }}
     >
       <Stack

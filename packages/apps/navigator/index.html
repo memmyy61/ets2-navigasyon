@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="tr" data-joy-color-scheme="dark" data-mui-color-scheme="dark">
   <head>
     <meta charset="utf-8" />
     <meta
@@ -7,8 +7,18 @@
       content="width=device-width, initial-scale=1 maximum-scale=1"
     />
     <meta name="theme-color" content="#000000" />
-    <meta name="description" content="Navigator" />
-    <title>Navigator</title>
+    <!-- ETS2 Navigasyon: the page is already dark; tells browsers (e.g. Samsung
+         Internet's "dark theme for sites") not to apply their own dark filter. -->
+    <meta name="color-scheme" content="dark" />
+    <meta name="darkreader-lock" />
+    <style>
+      :root {
+        color-scheme: dark;
+        background: #1a1a1a;
+      }
+    </style>
+    <meta name="description" content="ETS2 Navigasyon" />
+    <title>ETS2 Navigasyon</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

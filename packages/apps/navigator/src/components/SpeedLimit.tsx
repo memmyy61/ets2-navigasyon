@@ -65,7 +65,7 @@ const SpeedLimitMph = forwardRef((props: { limit: number }, ref) => (
 
 const SpeedLimitKph = forwardRef(
   (props: { limit: number; speeding: boolean }, ref) => {
-    const ring = props.speeding ? '#fff' : '#f22';
+    const ring = props.speeding ? '#fff' : '#e62020';
     return (
       <Box
         boxShadow={
@@ -77,7 +77,7 @@ const SpeedLimitKph = forwardRef(
         borderColor={ring}
         minWidth={'4em'}
         sx={{
-          backgroundColor: props.speeding ? '#ff1744' : 'white',
+          backgroundColor: props.speeding ? '#ff1744' : '#111',
           transition: 'background-color 0.2s, box-shadow 0.2s',
         }}
         ref={ref}
@@ -100,7 +100,7 @@ const SpeedLimitKph = forwardRef(
             fontSize={'xl2'}
             fontWeight={'bold'}
             sx={{
-              color: props.speeding ? 'white' : 'common.black',
+              color: 'white',
               WebkitTextStroke: 1.25,
             }}
           >
