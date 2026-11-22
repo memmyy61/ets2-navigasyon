@@ -1,3 +1,4 @@
+# ETS2 Navigasyon
 name: ETS2 Navigasyon - Windows telemetri istemcisi
 
 # Builds the Windows telemetry client (reads ETS2 telemetry and sends it to the
