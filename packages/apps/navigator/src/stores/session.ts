@@ -2,7 +2,8 @@ import { makeAutoObservable } from 'mobx';
 import type { SessionStore, TelemetryStatus } from './types';
 
 export class SessionStoreImpl implements SessionStore {
-  themeMode: 'light' | 'dark' = 'light';
+  // ETS2 Navigasyon: always dark.
+  themeMode: 'light' | 'dark' = 'dark';
   hasReceivedFirstTelemetry = false;
   isAuthenticated = false;
   bindingStale = false;

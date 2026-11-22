@@ -81,7 +81,8 @@ export class TelemetryService {
             runInAction(() => (route.segmentComplete = event.data));
             break;
           case 'themeModeUpdate':
-            runInAction(() => (session.themeMode = event.data));
+            // ETS2 Navigasyon: always dark; ignore day/night updates.
+            runInAction(() => (session.themeMode = 'dark'));
             break;
           case 'trailerUpdate':
             runInAction(() => (route.trailerPoint = event.data?.position));

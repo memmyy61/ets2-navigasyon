@@ -44,6 +44,15 @@ export class MapCamera {
     map.easeTo({ offset });
   }
 
+  /** ETS2 Navigasyon: rotate the map so north is up (like the game's map). */
+  rotateToNorth(): void {
+    const map = this.handle.getMap();
+    if (!map) {
+      return;
+    }
+    map.easeTo({ bearing: 0, pitch: 0, duration: 400 });
+  }
+
   clearPitchAndBearing(): void {
     const map = this.handle.getMap();
     if (!map) {

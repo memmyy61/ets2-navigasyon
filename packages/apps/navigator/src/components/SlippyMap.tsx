@@ -67,6 +67,12 @@ export const SlippyMap = (props: {
         );
       }}
       onDragStart={() => props.onDragStart()}
+      onRotateStart={e => {
+        // ETS2 Navigasyon: rotating the map by hand also detaches the camera.
+        if (e.originalEvent) {
+          props.onDragStart();
+        }
+      }}
       onZoomStart={e => {
         // we only care about zoom start events triggered by user input, not
         // triggered programmatically by, e.g., camera-moving APIs

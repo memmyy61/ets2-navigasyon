@@ -1,13 +1,16 @@
 import { Stack } from '@mui/joy';
 import type { ReactElement } from 'react';
 
+// ETS2 Navigasyon layout:
+// - top right: speed limit sign (under the directions banner)
+// - bottom right: recenter, compass, route and search buttons, then the
+//   in-game clock and fuel range (just above the route bar).
 export const HudStack = (props: {
   Direction: () => ReactElement;
   SpeedLimit: () => ReactElement;
   RecenterFab: () => ReactElement;
   RouteFab: () => ReactElement;
   SearchFab: () => ReactElement;
-  /** ETS2 Navigasyon: in-game clock in the bottom-right corner. */
   Clock?: () => ReactElement;
 }) => {
   console.log('render controls');
@@ -19,7 +22,6 @@ export const HudStack = (props: {
         alignItems={'end'}
         sx={{ pointerEvents: 'auto' }}
       >
-        <props.Direction />
         <props.SpeedLimit />
       </Stack>
       <Stack
@@ -28,10 +30,11 @@ export const HudStack = (props: {
         sx={{ pointerEvents: 'auto' }}
       >
         <props.RecenterFab />
+        <props.Direction />
         <props.RouteFab />
         <props.SearchFab />
         {props.Clock && (
-          <Stack sx={{ mt: 1 }}>
+          <Stack sx={{ mt: 1 }} alignItems={'flex-end'} alignSelf={'end'}>
             <props.Clock />
           </Stack>
         )}

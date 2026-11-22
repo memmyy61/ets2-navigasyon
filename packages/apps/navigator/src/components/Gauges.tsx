@@ -14,6 +14,11 @@ export const FuelGauge = (props: { extra: ExtraTelemetry | undefined }) => {
   const pct = Math.round((fuel.value / fuel.capacity) * 100);
   const color =
     fuel.warning || pct <= 10 ? '#ff5252' : pct <= 25 ? '#ffb300' : '#fff';
+  // remaining range as the game shows it; fall back to % if unknown.
+  const text =
+    fuel.range != null && fuel.range > 0
+      ? `${Math.round(fuel.range)} km`
+      : `%${pct}`;
   return (
     <Stack
       direction={'row'}
@@ -32,7 +37,7 @@ export const FuelGauge = (props: { extra: ExtraTelemetry | undefined }) => {
         fontWeight={'bold'}
         sx={{ color, lineHeight: 1.4 }}
       >
-        %{pct}
+        {text}
       </Typography>
     </Stack>
   );
