@@ -1,31 +1,53 @@
 import os from 'node:os';
 
+// Network adapters that phones on the Wi-Fi/hotspot can't reach.
+const virtualAdapterPattern =
+  /vethernet|virtualbox|vmware|hyper-v|wsl|loopback|bluetooth|tailscale|zerotier|hamachi|vpn|docker|default switch/i;
+// Adapters that are most likely the Wi-Fi the phone is on.
+const wifiAdapterPattern =
+  /wi-?fi|wlan|wireless|kablosuz|yerel ag baglantisi\*|local area connection\*/i;
+
+export interface LanAddress {
+  url: string;
+  adapter: string;
+}
+
 /**
  * Returns navigator app URLs using this PC's local network (IPv4) addresses,
  * most likely candidates first. Phones/tablets on the same Wi-Fi or hotspot
  * can open these.
  */
-export function getLanNavigatorUrls(port = 62840): string[] {
-  const addresses: string[] = [];
-  for (const infos of Object.values(os.networkInterfaces())) {
+export function getLanAddresses(port = 62840): LanAddress[] {
+  const candidates: (LanAddress & { score: number })[] = [];
+  for (const [adapter, infos] of Object.entries(os.networkInterfaces())) {
     for (const info of infos ?? []) {
-      if (info.family === 'IPv4' && !info.internal) {
-        addresses.push(info.address);
+      if (info.family !== 'IPv4' || info.internal) {
+        continue;
       }
+      const ip = info.address;
+      if (ip.startsWith('169.254.')) {
+        // link-local: no DHCP, not usable
+        continue;
+      }
+      let score = virtualAdapterPattern.test(adapter) ? 100 : 0;
+      if (wifiAdapterPattern.test(adapter)) {
+        score -= 10;
+      }
+      if (ip.startsWith('192.168.137.')) {
+        // this PC's own Windows mobile hotspot
+        score -= 5;
+      }
+      if (ip.startsWith('172.')) {
+        score += 5;
+      }
+      candidates.push({ url: `http://${ip}:${port}`, adapter, score });
     }
   }
-  const score = (ip: string) =>
-    // Windows mobile hotspot
-    ip.startsWith('192.168.137.')
-      ? 0
-      : ip.startsWith('192.168.')
-        ? 1
-        : ip.startsWith('10.')
-          ? 2
-          : ip.startsWith('172.')
-            ? 3
-            : 4;
-  return [...new Set(addresses)]
-    .sort((a, b) => score(a) - score(b))
-    .map(ip => `http://${ip}:${port}`);
+  return candidates
+    .sort((a, b) => a.score - b.score)
+    .map(({ url, adapter }) => ({ url, adapter }));
+}
+
+export function getLanNavigatorUrls(port = 62840): string[] {
+  return getLanAddresses(port).map(a => a.url);
 }

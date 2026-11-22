@@ -11,7 +11,7 @@ import {
   getTelemetryId,
   startTelemetryLoop,
 } from './helpers';
-import { getLanNavigatorUrls } from './lan';
+import { getLanAddresses } from './lan';
 
 async function main() {
   //checkIsPluginInstalled();
@@ -51,8 +51,9 @@ async function main() {
     telemetryClient,
     telemetryId,
     onPairingCodeReceived: pairingCode => {
-      const lanUrls = getLanNavigatorUrls();
-      const phoneUrl = process.env.NAV_URL ?? lanUrls[0] ?? navigatorUrl;
+      const lanAddresses = getLanAddresses();
+      const phoneUrl =
+        process.env.NAV_URL ?? lanAddresses[0]?.url ?? navigatorUrl;
       console.log('\n========================================');
       console.log(' ETS2 Navigasyon - telefonu baglama');
       console.log('========================================\n');
@@ -60,12 +61,11 @@ async function main() {
       console.log(renderANSI(`${phoneUrl}/?pair=${pairingCode}`));
       console.log('\nveya telefon tarayicisinda su adresi acin:');
       console.log('   ', phoneUrl);
-      if (lanUrls.length > 1) {
-        console.log(
-          '(acilmazsa digerlerini deneyin:',
-          lanUrls.slice(1).join(', '),
-          ')',
-        );
+      if (lanAddresses.length > 1) {
+        console.log('\nacilmazsa digerlerini deneyin:');
+        for (const { url, adapter } of lanAddresses.slice(1)) {
+          console.log('   ', url, ` (${adapter})`);
+        }
       }
       console.log('\nve su eslestirme kodunu girin:   ', pairingCode, '\n');
     },
@@ -85,9 +85,39 @@ async function main() {
   });
 
   // TODO only send telemetry if there are viewers connected.
+  let missingSince: number | undefined;
+  let warned = false;
   startTelemetryLoop({
     getTelemetry,
     telemetryClient,
+    onTelemetry: type => {
+      if (type === 'normal') {
+        if (warned) {
+          console.log('oyun verisi geliyor, sorun cozuldu.');
+        }
+        missingSince = undefined;
+        warned = false;
+        return;
+      }
+      missingSince ??= Date.now();
+      if (!warned && Date.now() - missingSince > 15_000) {
+        warned = true;
+        if (type === 'undefined') {
+          console.log(
+            '\nUYARI: Oyundan veri okunamiyor. ETS2 acik mi? Aciksa telemetri ' +
+              'eklentisi (scs-telemetry.dll) yuklu degil veya surumu uyumsuz.\n' +
+              '  Dosya su klasorde olmali:\n' +
+              '  ...\\Euro Truck Simulator 2\\bin\\win_x64\\plugins\\scs-telemetry.dll\n' +
+              '  Indirme: https://github.com/RenCloud/scs-sdk-plugin/releases (v1.12.1)\n',
+          );
+        } else {
+          console.log(
+            '\nUYARI: Oyun acik ama kamyon konumu henuz yok (0,0,0). ' +
+              'Bir profile girip kamyonla yola cikin.\n',
+          );
+        }
+      }
+    },
     onError: err => {
       if (err instanceof Error) {
         console.log('error:', err.message);
