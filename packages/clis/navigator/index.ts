@@ -85,6 +85,7 @@ async function main() {
   });
 
   // TODO only send telemetry if there are viewers connected.
+  let consecutiveErrors = 0;
   let missingSince: number | undefined;
   let warned = false;
   startTelemetryLoop({
@@ -119,12 +120,19 @@ async function main() {
       }
     },
     onError: err => {
+      consecutiveErrors++;
       if (err instanceof Error) {
-        console.log('error:', err.message);
+        console.log('hata:', err.message);
       } else {
-        console.log(err ?? 'unknown error');
+        console.log('hata:', err ?? 'bilinmeyen hata');
       }
-      process.exit(6);
+      if (consecutiveErrors >= 30) {
+        console.log('sunucuya uzun suredir veri gonderilemiyor, cikiliyor.');
+        process.exit(6);
+      }
+    },
+    onDelta: () => {
+      consecutiveErrors = 0;
     },
   });
 }

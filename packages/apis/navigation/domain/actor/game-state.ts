@@ -1,4 +1,4 @@
-import { assert, assertExists } from '@truckermudgeon/base/assert';
+import { assertExists } from '@truckermudgeon/base/assert';
 import type { Position } from '@truckermudgeon/base/geom';
 import { contains, toRadians } from '@truckermudgeon/base/geom';
 import type { PointRBush } from '@truckermudgeon/map/point-rbush';
@@ -94,17 +94,26 @@ export function toThemeMode(
     `June 21, 2025 ${hour}:${minute} GMT${hourOffset >= 0 ? '+' : ''}${hourOffset}`,
   );
 
-  const { sunset, dawn } = SunCalc.getTimes(now, lat, lng);
+  const times = SunCalc.getTimes(now, lat, lng);
   const nowTime = now.getTime();
-  const sunsetTime = sunset.getTime();
-  const dawnTime = dawn.getTime();
-
-  // sanity check: suncalc always returns times where dawn < sunset
-  // (i.e., it never returns a dawn for the next day, after sunset)
-  assert(
-    dawnTime < sunsetTime,
-    `dawnTime(${dawnTime}) unexpectedly >= sunsetTime(${sunsetTime})`,
-  );
+  // Near the summer solstice at high latitudes (e.g., Iceland, northern
+  // Scandinavia), the sun never gets low enough for civil dawn ("white
+  // nights"), and above the arctic circle it doesn't set at all. suncalc
+  // returns Invalid Dates (NaN) for those; fall back to sunrise, and treat
+  // "no sunset" as daytime.
+  const sunsetTime = times.sunset.getTime();
+  let dawnTime = times.dawn.getTime();
+  if (Number.isNaN(dawnTime)) {
+    dawnTime = times.sunrise.getTime();
+  }
+  if (Number.isNaN(dawnTime) || Number.isNaN(sunsetTime)) {
+    return 'light';
+  }
+  if (dawnTime >= sunsetTime) {
+    // shouldn't happen (suncalc returns same-day times), but don't break
+    // navigation over the map's color theme.
+    return 'light';
+  }
 
   if (nowTime < dawnTime) {
     // before dawn

@@ -56,7 +56,13 @@ export function startTelemetryLoop(options: {
         options.onDelta?.(delta);
         setTimeout(pushTelemetry, clamp(500 - delta, 0, 500));
       })
-      .catch(onError);
+      .catch((err: unknown) => {
+        // keep going: a single failed push (e.g., a server-side error while
+        // processing one telemetry frame) shouldn't stop navigation.
+        // `onError` decides whether the failure is fatal.
+        onError(err);
+        setTimeout(pushTelemetry, 2_000);
+      });
   };
 
   pushTelemetry();
