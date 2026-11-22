@@ -92,10 +92,10 @@ if [ "${SADECE_WEB:-0}" != "1" ]; then
     npx generator search -m europe -i "$P" -o "$O"
 
   calistir yolagi "Yol ağı (rota hesaplama için)" \
-    npx generator graph -m europe -i "$P" -o "$O" -c
+    npx generator graph -m europe -i "$P" -o "$O"
 
   calistir donerkavsak "Döner kavşaklar" \
-    npx generator roundabouts -m europe -i "$P" -g "$O" -o "$O" -c
+    npx generator roundabouts -m europe -i "$P" -g "$O" -o "$O"
 
   adim "Navigasyon veri paketi"
   # ATS'ye özel ek etiketler ETS2'de yok; sunucu için boş dosya yeterli.
