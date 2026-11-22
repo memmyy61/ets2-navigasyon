@@ -1,5 +1,8 @@
 import { assertExists } from '@truckermudgeon/base/assert';
-import { toGameState } from '../../domain/actor/game-state';
+import {
+  toGameState,
+  toLocalTimeOffsetMinutes,
+} from '../../domain/actor/game-state';
 import { toSegmentInfo } from '../../domain/actor/segment-info';
 import type { LookupService } from '../../domain/lookup-data';
 import type { SessionActor } from '../../domain/session-actor';
@@ -94,6 +97,8 @@ export function subscribeSession(
   };
 
   let hasTelemetry = false;
+  let tzComputedAt = 0;
+  let localTimeOffsetMinutes: number | undefined;
   const offLatest = actor.getLatestTelemetry().subscribe(() => {
     hasTelemetry = true;
     wake?.();
@@ -173,7 +178,25 @@ export function subscribeSession(
         hasTelemetry = false;
         const telemetry = actor.getLatestTelemetry().get();
         if (telemetry) {
-          yield { type: 'positionUpdate', data: toGameState(telemetry) };
+          const gameState = toGameState(telemetry);
+          // local time zone only changes at borders; recompute every 10s.
+          const now = Date.now();
+          if (now - tzComputedAt > 10_000 && actor.gameContext) {
+            tzComputedAt = now;
+            try {
+              const { graphAndMapData } = lookups.getData(actor.gameContext);
+              localTimeOffsetMinutes =
+                toLocalTimeOffsetMinutes(
+                  telemetry,
+                  graphAndMapData.tsMapData.countries,
+                  graphAndMapData.graphNodeRTree,
+                ) ?? localTimeOffsetMinutes;
+            } catch (e) {
+              console.warn('could not compute local time zone', e);
+            }
+          }
+          gameState.localTimeOffsetMinutes = localTimeOffsetMinutes;
+          yield { type: 'positionUpdate', data: gameState };
         }
       }
 

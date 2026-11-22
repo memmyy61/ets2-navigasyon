@@ -58,30 +58,22 @@ export const RouteControls = observer(
       : toGameSeconds(realMinutes * 60, session.map) / 60;
 
     const isGame = displayPrefs.timeMode === 'game';
-    const minutesShown = isGame ? gameMinutes : realMinutes;
-    const h = Math.floor(minutesShown / 60);
-    const m = Math.round(minutesShown % 60);
     let arrival: string;
-    if (isGame && controls.gameTimeMinutes != null) {
-      const clock = formatGameClock(controls.gameTimeMinutes + gameMinutes);
-      const today = formatGameClock(controls.gameTimeMinutes).day;
+    const clockNow = controls.localGameTimeMinutes;
+    if (isGame && clockNow != null) {
+      const clock = formatGameClock(clockNow + gameMinutes);
+      const today = formatGameClock(clockNow).day;
       arrival = clock.day === today ? clock.time : `${clock.day} ${clock.time}`;
     } else {
       arrival = formatRealClock(new Date(Date.now() + realMinutes * 60_000));
     }
     const display = {
+      mode: isGame ? ('game' as const) : ('real' as const),
       arrival,
-      arrivalLabel: isGame ? 'varış (oyun saati)' : 'varış (gerçek saat)',
-      duration: `${h}:${m.toString().padStart(2, '0')}`,
-      durationLabel: isGame
-        ? h > 0
-          ? 'saat (oyun)'
-          : 'dakika (oyun)'
-        : h > 0
-          ? 'saat (gerçek)'
-          : 'dakika (gerçek)',
-      distance: toLengthAndUnit(gameMeters, unitOptions),
+      durationMinutes: isGame ? gameMinutes : realMinutes,
+      distance: toLengthAndUnit(isGame ? gameMeters : realMeters, unitOptions),
     };
+
     const showManageStops =
       route.activeRoute != null && route.activeRoute.segments.length > 1;
     return (

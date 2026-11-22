@@ -14,6 +14,7 @@ export class ControlsStoreImpl implements ControlsStore {
   limit = 0;
   speed = 0;
   gameTimeMinutes: number | undefined = undefined;
+  localTimeOffsetMinutes: number | undefined = undefined;
   extra: ExtraTelemetry | undefined = undefined;
 
   constructor(
@@ -23,6 +24,13 @@ export class ControlsStoreImpl implements ControlsStore {
     private readonly navSheet: NavSheetStore,
   ) {
     makeAutoObservable(this, { extra: observable.ref });
+  }
+
+  /** the in-game clock as the game shows it (local time zone). */
+  get localGameTimeMinutes(): number | undefined {
+    return this.gameTimeMinutes != null
+      ? this.gameTimeMinutes + (this.localTimeOffsetMinutes ?? 0)
+      : undefined;
   }
 
   get units(): 'imperial' | 'metric' {

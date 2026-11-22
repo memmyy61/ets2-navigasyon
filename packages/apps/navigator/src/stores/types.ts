@@ -20,8 +20,11 @@ export interface ControlsStore {
   speed: number;
   /** ETS2 Navigasyon: in-game clock, minutes since Day 0 (Monday 00:00). */
   gameTimeMinutes?: number;
+  /** minutes to add to `gameTimeMinutes` for the local (in-game shown) time. */
+  localTimeOffsetMinutes?: number;
   /** ETS2 Navigasyon: gauges sent by the telemetry client. */
   extra?: ExtraTelemetry;
+  readonly localGameTimeMinutes?: number;
   readonly units: 'imperial' | 'metric';
   readonly showRecenterFab: boolean;
   readonly showRouteFab: boolean;

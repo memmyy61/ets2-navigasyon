@@ -21,7 +21,6 @@ import {
 } from '@mui/joy';
 import { Collapse } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { toDuration } from './text';
 
 export interface RouteControlsProps {
   summary: {
@@ -33,12 +32,11 @@ export interface RouteControlsProps {
    * omitted, falls back to real time computed from `summary.minutes`.
    */
   display?: {
+    /** 'game': orange dot, 'real': green dot */
+    mode: 'game' | 'real';
     arrival: string;
-    arrivalLabel: string;
-    duration: string;
-    durationLabel: string;
+    durationMinutes: number;
     distance: { length: number; unit: string };
-    distanceLabel?: string;
   };
   onTimeModeToggle?: () => void;
   onExpandedToggle: (expanded: boolean) => void;
@@ -67,17 +65,18 @@ export const RouteControls = (props: RouteControlsProps) => {
     props.onExpandedToggle(false);
   };
 
-  const realDuration = toDuration(minutes * 60);
   const display = props.display ?? {
+    mode: 'real' as const,
     arrival: new Intl.DateTimeFormat('tr-TR', {
       hour: '2-digit',
       minute: '2-digit',
     }).format(new Date(Date.now() + minutes * 60_000)),
-    arrivalLabel: 'varış',
-    duration: `${realDuration.hours}:${realDuration.minutes < 10 ? `0${realDuration.minutes}` : realDuration.minutes}`,
-    durationLabel: minutes < 60 ? 'dakika' : 'saat',
+    durationMinutes: minutes,
     distance: props.summary.distance,
   };
+  const totalMinutes = Math.max(0, Math.round(display.durationMinutes));
+  const hours = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
 
   return (
     <Card
@@ -101,25 +100,55 @@ export const RouteControls = (props: RouteControlsProps) => {
         <Stack
           direction={'row'}
           flexGrow={1}
-          justifyContent={'space-between'}
+          justifyContent={'space-around'}
+          alignItems={'center'}
           onClick={props.onTimeModeToggle}
-          sx={{ cursor: props.onTimeModeToggle ? 'pointer' : undefined }}
+          sx={{
+            cursor: props.onTimeModeToggle ? 'pointer' : undefined,
+            position: 'relative',
+            userSelect: 'none',
+          }}
         >
+          {props.display && (
+            <Box
+              aria-label={
+                display.mode === 'game' ? 'oyun saati' : 'gerçek saat'
+              }
+              sx={{
+                position: 'absolute',
+                top: -6,
+                left: -6,
+                width: 12,
+                height: 12,
+                borderRadius: '50%',
+                backgroundColor:
+                  display.mode === 'game' ? '#ff9800' : '#43a047',
+                boxShadow: '0 0 4px 0 #0006',
+              }}
+            />
+          )}
           <Stack alignItems={'center'}>
             <Typography level={'h3'} fontWeight={'bold'}>
               {display.arrival}
             </Typography>
-            <Typography level={'body-sm'}>{display.arrivalLabel}</Typography>
+            <Typography level={'body-sm'}>varış</Typography>
           </Stack>
           <Stack alignItems={'center'}>
-            <Typography level={'h3'}>{display.duration}</Typography>
-            <Typography level={'body-sm'}>{display.durationLabel}</Typography>
+            <Typography level={'h3'}>
+              {hours > 0 && (
+                <>
+                  {hours}
+                  <Typography level={'body-md'}> sa </Typography>
+                </>
+              )}
+              {mins}
+              <Typography level={'body-md'}> dk</Typography>
+            </Typography>
+            <Typography level={'body-sm'}>kalan</Typography>
           </Stack>
           <Stack alignItems={'center'}>
             <Typography level={'h3'}>{display.distance.length}</Typography>
-            <Typography level={'body-sm'}>
-              {display.distanceLabel ?? display.distance.unit}
-            </Typography>
+            <Typography level={'body-sm'}>{display.distance.unit}</Typography>
           </Stack>
         </Stack>
         <IconButton size={'lg'} variant={'soft'} onClick={toggleDisclosure}>

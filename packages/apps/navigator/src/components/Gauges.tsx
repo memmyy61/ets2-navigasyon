@@ -1,131 +1,68 @@
-import { AccessTime, Hotel, LocalGasStation, Speed } from '@mui/icons-material';
+import { LocalGasStation } from '@mui/icons-material';
 import { Stack, Typography } from '@mui/joy';
 import type { ExtraTelemetry } from '@truckermudgeon/navigation/types';
-import type { ReactElement } from 'react';
-import { formatGameClock, formatHoursMinutes } from '../util/game-units';
+import { formatGameClock } from '../util/game-units';
 
 /**
- * ETS2 Navigasyon: small dark "pills" shown under the speed widget:
- * game clock, fuel, time until rest, cruise control, delivery deadline.
+ * ETS2 Navigasyon: small fuel indicator shown under the speed widget.
  */
-export const Gauges = (props: {
-  gameTimeMinutes: number | undefined;
-  extra: ExtraTelemetry | undefined;
-}) => {
-  const { gameTimeMinutes, extra } = props;
-  const rows: ReactElement[] = [];
-
-  if (gameTimeMinutes != null) {
-    const { day, time } = formatGameClock(gameTimeMinutes);
-    rows.push(<Pill key={'clock'} Icon={AccessTime} text={`${day} ${time}`} />);
-  }
-
-  const fuel = extra?.fuel;
-  if (fuel?.value != null && fuel.capacity) {
-    const pct = Math.round((fuel.value / fuel.capacity) * 100);
-    const range =
-      fuel.range != null && fuel.range > 0
-        ? ` · ${Math.round(fuel.range)} km`
-        : '';
-    rows.push(
-      <Pill
-        key={'fuel'}
-        Icon={LocalGasStation}
-        text={`%${pct}${range}`}
-        color={
-          fuel.warning || pct <= 10
-            ? 'danger'
-            : pct <= 25
-              ? 'warning'
-              : undefined
-        }
-      />,
-    );
-  }
-
-  const rest = extra?.navigation?.nextRestStop;
-  if (rest != null && rest >= 0) {
-    rows.push(
-      <Pill
-        key={'rest'}
-        Icon={Hotel}
-        text={formatHoursMinutes(rest)}
-        color={rest <= 30 ? 'danger' : rest <= 90 ? 'warning' : undefined}
-      />,
-    );
-  }
-
-  const cruise = extra?.cruiseControl;
-  if (cruise?.enabled && cruise.kph != null) {
-    rows.push(
-      <Pill
-        key={'cruise'}
-        Icon={Speed}
-        text={`${Math.round(cruise.kph)} km/sa`}
-      />,
-    );
-  }
-
-  const deadline = extra?.job?.deliveryTime;
-  if (
-    deadline != null &&
-    deadline > 0 &&
-    gameTimeMinutes != null &&
-    extra?.job?.plannedDistanceKm
-  ) {
-    const left = deadline - gameTimeMinutes;
-    const { day, time } = formatGameClock(deadline);
-    rows.push(
-      <Pill
-        key={'deadline'}
-        text={`Teslim ${day} ${time}`}
-        color={left < 0 ? 'danger' : left < 120 ? 'warning' : undefined}
-      />,
-    );
-  }
-
-  if (rows.length === 0) {
+export const FuelGauge = (props: { extra: ExtraTelemetry | undefined }) => {
+  const fuel = props.extra?.fuel;
+  if (fuel?.value == null || !fuel.capacity) {
     return null;
   }
-  return (
-    <Stack gap={0.5} alignItems={'flex-end'}>
-      {rows}
-    </Stack>
-  );
-};
-
-const colors = {
-  warning: '#ffb300',
-  danger: '#ff5252',
-};
-
-const Pill = (props: {
-  Icon?: typeof AccessTime;
-  text: string;
-  color?: keyof typeof colors;
-}) => {
-  const color = props.color ? colors[props.color] : '#fff';
+  const pct = Math.round((fuel.value / fuel.capacity) * 100);
+  const color =
+    fuel.warning || pct <= 10 ? '#ff5252' : pct <= 25 ? '#ffb300' : '#fff';
   return (
     <Stack
       direction={'row'}
       alignItems={'center'}
-      gap={0.5}
+      gap={0.25}
       sx={{
-        backgroundColor: '#000c',
+        backgroundColor: '#000b',
         borderRadius: '1em',
-        px: 1,
-        py: 0.25,
-        boxShadow: '0 0 2px 0 #0008',
+        px: 0.75,
+        py: 0.125,
       }}
     >
-      {props.Icon && <props.Icon sx={{ color, fontSize: '1.1em' }} />}
+      <LocalGasStation sx={{ color, fontSize: '1em' }} />
       <Typography
         level={'body-sm'}
         fontWeight={'bold'}
-        sx={{ color, whiteSpace: 'nowrap' }}
+        sx={{ color, lineHeight: 1.4 }}
       >
-        {props.text}
+        %{pct}
       </Typography>
     </Stack>
+  );
+};
+
+/**
+ * ETS2 Navigasyon: the in-game clock, like a phone's status bar clock.
+ */
+export const GameClock = (props: {
+  localGameTimeMinutes: number | undefined;
+}) => {
+  if (props.localGameTimeMinutes == null) {
+    return null;
+  }
+  const { time } = formatGameClock(props.localGameTimeMinutes);
+  return (
+    <Typography
+      level={'body-md'}
+      fontWeight={'bold'}
+      sx={{
+        backgroundColor: '#000b',
+        color: '#fff',
+        borderRadius: '1em',
+        px: 1,
+        py: 0.125,
+        lineHeight: 1.4,
+        fontVariantNumeric: 'tabular-nums',
+      }}
+    >
+      {time}
+    </Typography>
   );
 };

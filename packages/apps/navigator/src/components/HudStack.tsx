@@ -7,6 +7,8 @@ export const HudStack = (props: {
   RecenterFab: () => ReactElement;
   RouteFab: () => ReactElement;
   SearchFab: () => ReactElement;
+  /** ETS2 Navigasyon: in-game clock in the bottom-right corner. */
+  Clock?: () => ReactElement;
 }) => {
   console.log('render controls');
   return (
@@ -28,6 +30,11 @@ export const HudStack = (props: {
         <props.RecenterFab />
         <props.RouteFab />
         <props.SearchFab />
+        {props.Clock && (
+          <Stack sx={{ mt: 1 }}>
+            <props.Clock />
+          </Stack>
+        )}
       </Stack>
     </Stack>
   );

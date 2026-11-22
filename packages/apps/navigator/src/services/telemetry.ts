@@ -51,6 +51,10 @@ export class TelemetryService {
                 session.bindingStale = false;
               }
               this.controls.gameTimeMinutes = gameState.gameTimeMinutes;
+              if (gameState.localTimeOffsetMinutes != null) {
+                this.controls.localTimeOffsetMinutes =
+                  gameState.localTimeOffsetMinutes;
+              }
               if (gameState.extra) {
                 this.controls.extra = gameState.extra;
               }

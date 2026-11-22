@@ -41,8 +41,75 @@ export function toGameState(telemetry: TruckSimTelemetry): GameState {
     },
     scale: telemetry.game.scale,
     gameTimeMinutes: telemetry.game.time.value,
-    extra: telemetry.extra,
+    extra: normalizeExtra(telemetry.extra),
   };
+}
+
+/**
+ * trucksim-telemetry converts some values to milliseconds: the game's
+ * route-advisor time (s -> ms) and time until next rest stop (min -> ms).
+ * Convert them back to seconds and minutes.
+ */
+function normalizeExtra(
+  extra: TruckSimTelemetry['extra'],
+): TruckSimTelemetry['extra'] {
+  if (!extra?.navigation) {
+    return extra;
+  }
+  const { time, nextRestStop, ...rest } = extra.navigation;
+  return {
+    ...extra,
+    navigation: {
+      ...rest,
+      time: time != null ? time / 1000 : undefined,
+      nextRestStop: nextRestStop != null ? nextRestStop / 60_000 : undefined,
+    },
+  };
+}
+
+/**
+ * ETS2 Navigasyon: the game clock in telemetry is in the game's base time
+ * zone; the in-game clock shows local time. Returns how many minutes to add
+ * to `game.time` to get the local time at the truck's position.
+ *
+ * ETS2's base zone is Central European Summer Time (UTC+2; the game calendar
+ * is fixed at June 21). Country time zones in map data are UTC offsets that
+ * already include daylight saving time.
+ */
+export function toLocalTimeOffsetMinutes(
+  telemetry: TruckSimTelemetry,
+  countries: ReadonlyMap<string, Country>,
+  graphNodeRTree: PointRBush<{
+    x: number;
+    y: number;
+    z: number;
+    node: Node;
+  }>,
+): number | undefined {
+  if (telemetry.game.game.name !== 'ets2') {
+    return undefined;
+  }
+  const { X: x, Z: y } = telemetry.truck.position;
+  const closest = graphNodeRTree.findClosest(x, y, {
+    radius: 1_000,
+    predicate: ({ node }) =>
+      node.forwardCountryId !== 0 &&
+      node.forwardCountryId === node.backwardCountryId,
+  });
+  if (!closest) {
+    return undefined;
+  }
+  const country = countries
+    .values()
+    .find(c => c.id === closest.node.forwardCountryId);
+  if (!country) {
+    return undefined;
+  }
+  const tz =
+    country.secondaryTimeZones.find(tz => contains(tz.extent, [x, y]))
+      ?.timeZone ?? country.timeZone;
+  const ets2BaseTimeZoneMinutes = 120;
+  return tz - ets2BaseTimeZoneMinutes;
 }
 
 export function toThemeMode(

@@ -5,7 +5,7 @@ import { action } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Compass } from '../components/Compass';
 import { Fab } from '../components/Fab';
-import { Gauges } from '../components/Gauges';
+import { FuelGauge, GameClock } from '../components/Gauges';
 import { HudStack } from '../components/HudStack';
 import { SpeedLimit } from '../components/SpeedLimit';
 import { BearingMode } from '../stores/camera';
@@ -22,6 +22,7 @@ export const Controls = () => (
     RecenterFab={RecenterFab}
     RouteFab={RouteFab}
     SearchFab={SearchFab}
+    Clock={GameClockControl}
   />
 );
 
@@ -53,18 +54,20 @@ const CompassControl = observer(() => {
 const SpeedLimitControl = observer(() => {
   const controls = useControlsStore();
   return (
-    <Stack gap={1} alignItems={'flex-end'}>
+    <Stack gap={0.5} alignItems={'flex-end'}>
       <SpeedLimit
         units={controls.units}
         limit={controls.limit}
         speed={controls.speed}
       />
-      <Gauges
-        gameTimeMinutes={controls.gameTimeMinutes}
-        extra={controls.extra}
-      />
+      <FuelGauge extra={controls.extra} />
     </Stack>
   );
+});
+
+const GameClockControl = observer(() => {
+  const controls = useControlsStore();
+  return <GameClock localGameTimeMinutes={controls.localGameTimeMinutes} />;
 });
 
 const RecenterFab = observer(() => {

@@ -234,6 +234,8 @@ export interface GameState extends TelemetrySample {
   scale: number;
   /** in-game clock: minutes since Day 0 (Monday 00:00). */
   gameTimeMinutes?: number;
+  /** minutes to add to `gameTimeMinutes` to get the local in-game clock. */
+  localTimeOffsetMinutes?: number;
   /** gauges (fuel, game GPS estimates, job...), if the client sends them. */
   extra?: ExtraTelemetry;
 }
