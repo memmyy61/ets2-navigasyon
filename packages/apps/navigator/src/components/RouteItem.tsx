@@ -12,6 +12,7 @@ import { Preconditions, UnreachableError } from '@truckermudgeon/base/precon';
 import type { Mode } from '@truckermudgeon/map/routing';
 import type { RouteWithSummary } from '@truckermudgeon/navigation/types';
 import type { ReactElement } from 'react';
+import { toDisplaySeconds, toGameMeters } from '../util/game-units';
 import { toDuration, toLengthAndUnit } from './text';
 
 export const RouteItem = (props: {
@@ -21,9 +22,13 @@ export const RouteItem = (props: {
   onRouteDetailsClick: () => void;
   onRouteGoClick: () => void;
 }) => {
-  const distanceMetersNum =
-    props.route.detour?.distanceMeters ?? props.route.distanceMeters;
-  const durationNum = props.route.detour?.duration ?? props.route.duration;
+  // ETS2 Navigasyon: show game-scale distance, and game or real duration.
+  const distanceMetersNum = toGameMeters(
+    props.route.detour?.distanceMeters ?? props.route.distanceMeters,
+  );
+  const durationNum = toDisplaySeconds(
+    props.route.detour?.duration ?? props.route.duration,
+  );
 
   let distance = toLengthAndUnit(distanceMetersNum, {
     units: props.units,
@@ -36,8 +41,8 @@ export const RouteItem = (props: {
   }).string;
 
   if (props.route.detour) {
-    distance = distanceMetersNum <= 0 ? 'Along the way' : `+${distance} detour`;
-    duration = durationNum <= 0 ? 'Quick detour' : `+${duration} detour`;
+    distance = distanceMetersNum <= 0 ? 'Yol üzerinde' : `+${distance} sapma`;
+    duration = durationNum <= 0 ? 'Kısa sapma' : `+${duration} sapma`;
   }
 
   return (
@@ -66,7 +71,7 @@ export const RouteItem = (props: {
               e.stopPropagation();
             }}
           >
-            Details
+            Ayrıntılar
           </Button>
           <Button
             size={'lg'}
@@ -77,7 +82,7 @@ export const RouteItem = (props: {
               e.stopPropagation();
             }}
           >
-            Go!
+            Başla
           </Button>
         </ListItemButton>
       </ListItem>
@@ -126,7 +131,7 @@ const RouteSummary = ({
     children.push(
       <Stack direction={'row'} gap={1}>
         <Toll />
-        <Typography>This route has tolls</Typography>
+        <Typography>Bu rotada paralı yol var</Typography>
       </Stack>,
     );
   }
@@ -172,8 +177,7 @@ const Grade = ({
         </svg>
       </Box>
       <Typography>
-        {Math.abs(grade.percentage)}%{' '}
-        {grade.percentage > 0 ? 'Uphill' : 'Descent'}{' '}
+        {Math.abs(grade.percentage)}% {grade.percentage > 0 ? 'Yokuş' : 'İniş'}{' '}
         <Typography fontSize={'sm'} color={'neutral'}>
           for {distance}
         </Typography>
@@ -189,11 +193,11 @@ function requiresBorder(road: string): boolean {
 function toModeString(mode: Mode) {
   switch (mode) {
     case 'fastest':
-      return 'Fastest';
+      return 'En hızlı (otoyol)';
     case 'shortest':
-      return 'Shortest';
+      return 'En kısa';
     case 'smallRoads':
-      return 'Prefer small roads';
+      return 'Küçük yolları tercih et';
     default:
       throw new UnreachableError(mode);
   }

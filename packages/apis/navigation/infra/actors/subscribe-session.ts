@@ -55,7 +55,7 @@ export function subscribeSession(
       );
     } else {
       segmentInfo = {
-        place: 'Your location',
+        place: 'Konumunuz',
         placeInfo: '',
         isFinal: index + 1 === activeRoute.segments.length,
       };

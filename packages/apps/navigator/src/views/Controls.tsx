@@ -1,9 +1,11 @@
 import { Directions, NavigationOutlined, Search } from '@mui/icons-material';
+import { Stack } from '@mui/joy';
 import { UnreachableError } from '@truckermudgeon/base/precon';
 import { action } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Compass } from '../components/Compass';
 import { Fab } from '../components/Fab';
+import { Gauges } from '../components/Gauges';
 import { HudStack } from '../components/HudStack';
 import { SpeedLimit } from '../components/SpeedLimit';
 import { BearingMode } from '../stores/camera';
@@ -51,11 +53,17 @@ const CompassControl = observer(() => {
 const SpeedLimitControl = observer(() => {
   const controls = useControlsStore();
   return (
-    <SpeedLimit
-      units={controls.units}
-      limit={controls.limit}
-      speed={controls.speed}
-    />
+    <Stack gap={1} alignItems={'flex-end'}>
+      <SpeedLimit
+        units={controls.units}
+        limit={controls.limit}
+        speed={controls.speed}
+      />
+      <Gauges
+        gameTimeMinutes={controls.gameTimeMinutes}
+        extra={controls.extra}
+      />
+    </Stack>
   );
 });
 

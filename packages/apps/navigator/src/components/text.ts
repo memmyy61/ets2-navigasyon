@@ -1,6 +1,5 @@
 import { assert, assertExists } from '@truckermudgeon/base/assert';
 import { UnreachableError } from '@truckermudgeon/base/precon';
-import { formatOrdinal } from '@truckermudgeon/base/text';
 import { BranchType } from '@truckermudgeon/navigation/constants';
 import type {
   SearchResult,
@@ -40,28 +39,24 @@ export function toLengthAndUnit(
       const singular = forceSingular || length === 1;
       raw = {
         length,
-        unit: abbreviateUnits ? 'm' : singular ? 'meter' : 'meters',
+        unit: abbreviateUnits ? 'm' : 'metre',
       };
     } else if (meters <= 200) {
       const length = Number(meters.toPrecision(2));
       raw = {
         length,
-        unit: abbreviateUnits ? 'm' : forceSingular ? 'meter' : 'meters',
+        unit: abbreviateUnits ? 'm' : 'metre',
       };
     } else if (meters <= 1000) {
       const length = Number((Math.round(meters / 50) * 50).toPrecision(2));
       raw = {
         length,
-        unit: abbreviateUnits ? 'm' : forceSingular ? 'meter' : 'meters',
+        unit: abbreviateUnits ? 'm' : 'metre',
       };
     } else {
       raw = {
         length: Math.round(meters / 1000),
-        unit: abbreviateUnits
-          ? 'km'
-          : forceSingular
-            ? 'kilometer'
-            : 'kilometers',
+        unit: abbreviateUnits ? 'km' : 'kilometre',
       };
     }
   } else {
@@ -113,11 +108,11 @@ export function toDuration(
 } {
   const { forceSingular } = options;
   const hourUnit = options.abbreviateUnits
-    ? { plural: 'hr', singular: 'hr' }
-    : { plural: 'hours', singular: 'hour' };
+    ? { plural: 'sa', singular: 'sa' }
+    : { plural: 'saat', singular: 'saat' };
   const minuteUnit = options.abbreviateUnits
-    ? { plural: 'min', singular: 'min' }
-    : { plural: 'minutes', singular: 'minute' };
+    ? { plural: 'dk', singular: 'dk' }
+    : { plural: 'dakika', singular: 'dakika' };
   const hours = Math.floor(seconds / 3600);
   const mins = Math.ceil((seconds % 3600) / 60);
 
@@ -146,6 +141,8 @@ export function toDuration(
 }
 
 export function toStepText(maneuver: StepManeuver): string {
+  // ETS2 Navigasyon: Turkish directions.
+  // [lane phrase] [action] [: road/place name]
   const strings: string[] = [];
 
   if (maneuver.laneHint?.lanes.length) {
@@ -167,33 +164,22 @@ export function toStepText(maneuver: StepManeuver): string {
       }
       break;
     }
+    const through = maneuver.direction === BranchType.THROUGH;
 
     if (isAllActive) {
-      strings.push('use any lane to');
+      strings.push('herhangi bir şeritten');
     } else if (numLeftLanes > 1) {
-      if (maneuver.direction === BranchType.THROUGH) {
-        strings.push('keep left to');
-      } else {
-        strings.push(`use the ${numLeftLanes} left lanes to`);
-      }
+      strings.push(
+        through ? 'sol tarafta kalarak' : `soldaki ${numLeftLanes} şeritten`,
+      );
     } else if (numRightLanes > 1) {
-      if (maneuver.direction === BranchType.THROUGH) {
-        strings.push('keep right to');
-      } else {
-        strings.push(`use the ${numRightLanes} right lanes to`);
-      }
+      strings.push(
+        through ? 'sağ tarafta kalarak' : `sağdaki ${numRightLanes} şeritten`,
+      );
     } else if (numLeftLanes === 1) {
-      if (maneuver.direction === BranchType.THROUGH) {
-        strings.push('keep left to');
-      } else {
-        strings.push('use the left lane to');
-      }
+      strings.push(through ? 'sol tarafta kalarak' : 'sol şeritten');
     } else if (numRightLanes === 1) {
-      if (maneuver.direction === BranchType.THROUGH) {
-        strings.push('keep right to');
-      } else {
-        strings.push('use the right lane to');
-      }
+      strings.push(through ? 'sağ tarafta kalarak' : 'sağ şeritten');
     } else {
       const activeIndices = [];
       for (let i = 0; i < lanes.length; i++) {
@@ -205,13 +191,9 @@ export function toStepText(maneuver: StepManeuver): string {
       if (activeIndices.length === 1) {
         const num = activeIndices[0] + 1;
         if (num <= lanes.length / 2) {
-          strings.push(
-            `use the ${getNumberWithOrdinal(num)} lane from the left to`,
-          );
+          strings.push(`soldan ${num}. şeritten`);
         } else {
-          strings.push(
-            `use the ${getNumberWithOrdinal(lanes.length - num + 1)} lane from the right to`,
-          );
+          strings.push(`sağdan ${lanes.length - num + 1}. şeritten`);
         }
       }
     }
@@ -225,34 +207,34 @@ export function toStepText(maneuver: StepManeuver): string {
   }
 
   if (textType === 'exit') {
-    strings.push('take');
-    strings.push(maneuver.banner!.text!.toLowerCase());
+    const exit = maneuver.banner!.text!.replace(/^exit\s*/i, '');
+    strings.push(`${exit} numaralı çıkışı kullanın`);
   } else {
     switch (maneuver.direction) {
       case BranchType.THROUGH:
-        strings.push('continue straight');
+        strings.push('düz devam edin');
         break;
       case BranchType.SLIGHT_LEFT:
-        strings.push('turn slightly left');
+        strings.push('hafif sola dönün');
         break;
       case BranchType.LEFT:
-        strings.push('turn left');
+        strings.push('sola dönün');
         break;
       case BranchType.SHARP_LEFT:
-        strings.push('turn sharply left');
+        strings.push('keskin sola dönün');
         break;
       case BranchType.SLIGHT_RIGHT:
-        strings.push('turn slightly right');
+        strings.push('hafif sağa dönün');
         break;
       case BranchType.RIGHT:
-        strings.push('turn right');
+        strings.push('sağa dönün');
         break;
       case BranchType.SHARP_RIGHT:
-        strings.push('turn sharply right');
+        strings.push('keskin sağa dönün');
         break;
       case BranchType.U_TURN_LEFT:
       case BranchType.U_TURN_RIGHT:
-        strings.push('make a U-turn');
+        strings.push('U dönüşü yapın');
         break;
       case BranchType.ROUND_BR:
       case BranchType.ROUND_R:
@@ -262,56 +244,47 @@ export function toStepText(maneuver: StepManeuver): string {
       case BranchType.ROUND_L:
       case BranchType.ROUND_BL:
       case BranchType.ROUND_B:
-        // TODO
         if (!strings.length) {
-          strings.push('at the roundabout, ');
+          strings.push('dönel kavşakta');
         } else {
-          strings.push('enter the roundabout, then');
+          strings.push('dönel kavşağa girin,');
         }
-        strings.push(
-          `take the ${formatOrdinal(maneuver.roundaboutExitNumber)} exit`,
-        );
+        strings.push(`${maneuver.roundaboutExitNumber}. çıkıştan çıkın`);
         break;
       case BranchType.ROUND_EXIT:
-        strings.push('exit the roundabout');
+        strings.push('dönel kavşaktan çıkın');
         break;
       case BranchType.MERGE:
-        strings.push('merge');
+        strings.push('yola katılın');
         break;
       case BranchType.DEPART:
-        strings.push('follow the route');
+        strings.push('rotayı takip edin');
         break;
       case BranchType.ARRIVE:
         strings.push(
-          `arrive at ${textType !== 'none' ? maneuver.banner!.text! : 'your destination'}`,
+          textType !== 'none'
+            ? `varış: ${maneuver.banner!.text!}`
+            : 'hedefinize vardınız',
         );
         break;
       case BranchType.FERRY:
-        strings.push(`take the ferry to ${assertExists(maneuver.banner).text}`);
+        strings.push(`feribota binin: ${assertExists(maneuver.banner).text}`);
         break;
       default:
         throw new UnreachableError(maneuver);
     }
   }
 
+  let string = strings.join(' ');
   if (
     textType === 'name' &&
     maneuver.direction !== BranchType.ARRIVE &&
     maneuver.direction !== BranchType.FERRY
   ) {
-    strings.push('onto');
-    strings.push(maneuver.banner!.text!);
+    string += `: ${maneuver.banner!.text!}`;
   }
 
-  const string = strings.join(' ');
-  return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
-// https://stackoverflow.com/a/31615643
-function getNumberWithOrdinal(n: number): string {
-  const s = ['th', 'st', 'nd', 'rd'],
-    v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  return string.charAt(0).toLocaleUpperCase('tr-TR') + string.slice(1);
 }
 
 // TODO unify with demo app.
@@ -355,7 +328,7 @@ export function toLocationString(search: SearchResult): string {
         case LocationType.IN_CITY:
           return `${search.city.name}, ${search.stateCode}`;
         case LocationType.NEAR_CITY:
-          return `near ${search.city.name}, ${search.stateCode}`;
+          return `${search.city.name} yakını, ${search.stateCode}`;
         case LocationType.IN_STATE:
           return `${search.stateName}`;
         default:

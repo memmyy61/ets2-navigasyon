@@ -90,22 +90,22 @@ export class NavSheetStoreImpl implements NavSheetStore {
   get title(): string {
     switch (this.currentPageKey) {
       case NavPageKey.CHOOSE_DESTINATION:
-        return 'Choose destination';
+        return 'Hedef seç';
       case NavPageKey.SEARCH_ALONG:
-        return 'Search along route';
+        return 'Rota üzerinde ara';
       case NavPageKey.CHOOSE_ON_MAP:
-        return 'Choose destination';
+        return 'Hedef seç';
       case NavPageKey.DESTINATIONS:
         // TODO improve
-        return this.searchQuery || 'Search results';
+        return this.searchQuery || 'Arama sonuçları';
       case NavPageKey.ROUTES:
-        return `Routes to ${assertExists(this.selectedDestination).label}`;
+        return `${assertExists(this.selectedDestination).label} - rotalar`;
       case NavPageKey.DIRECTIONS_FROM_ROUTE_CONTROLS:
-        return 'Directions';
+        return 'Yol tarifi';
       case NavPageKey.DIRECTIONS_FROM_ROUTES_LIST:
-        return 'Details';
+        return 'Ayrıntılar';
       case NavPageKey.MANAGE_STOPS:
-        return 'Manage stops';
+        return 'Durakları düzenle';
       default:
         throw new UnreachableError(this.currentPageKey);
     }

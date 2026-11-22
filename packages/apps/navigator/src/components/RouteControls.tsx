@@ -28,6 +28,19 @@ export interface RouteControlsProps {
     minutes: number;
     distance: { length: number; unit: string };
   };
+  /**
+   * ETS2 Navigasyon: preformatted arrival/duration (game or real time). When
+   * omitted, falls back to real time computed from `summary.minutes`.
+   */
+  display?: {
+    arrival: string;
+    arrivalLabel: string;
+    duration: string;
+    durationLabel: string;
+    distance: { length: number; unit: string };
+    distanceLabel?: string;
+  };
+  onTimeModeToggle?: () => void;
   onExpandedToggle: (expanded: boolean) => void;
   onManageStopsClick?: () => void;
   onSearchAlongRouteClick: () => void;
@@ -40,7 +53,7 @@ export interface RouteControlsProps {
 export const RouteControls = (props: RouteControlsProps) => {
   console.log('render route controls');
   const {
-    summary: { minutes, distance },
+    summary: { minutes },
   } = props;
   const [expanded, setExpanded] = useState(false);
   const DisclosureIcon = expanded ? KeyboardArrowDown : KeyboardArrowUp;
@@ -54,11 +67,17 @@ export const RouteControls = (props: RouteControlsProps) => {
     props.onExpandedToggle(false);
   };
 
-  const duration = toDuration(minutes * 60);
-  const arrival = new Date(Date.now() + minutes * 60_000);
-  const arrivalTimeString = new Intl.DateTimeFormat('en-US', {
-    timeStyle: 'short',
-  }).format(arrival);
+  const realDuration = toDuration(minutes * 60);
+  const display = props.display ?? {
+    arrival: new Intl.DateTimeFormat('tr-TR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(new Date(Date.now() + minutes * 60_000)),
+    arrivalLabel: 'varış',
+    duration: `${realDuration.hours}:${realDuration.minutes < 10 ? `0${realDuration.minutes}` : realDuration.minutes}`,
+    durationLabel: minutes < 60 ? 'dakika' : 'saat',
+    distance: props.summary.distance,
+  };
 
   return (
     <Card
@@ -79,22 +98,29 @@ export const RouteControls = (props: RouteControlsProps) => {
           alignItems: 'center',
         }}
       >
-        <Stack alignItems={'center'}>
-          <Typography level={'h3'} fontWeight={'bold'}>
-            {arrivalTimeString}
-          </Typography>
-          <Typography>arrival</Typography>
-        </Stack>
-        <Stack alignItems={'center'}>
-          <Typography level={'h3'}>
-            {duration.hours}:
-            {duration.minutes < 10 ? `0${duration.minutes}` : duration.minutes}
-          </Typography>
-          <Typography>{minutes < 60 ? 'minutes' : 'hours'}</Typography>
-        </Stack>
-        <Stack alignItems={'center'}>
-          <Typography level={'h3'}>{distance.length}</Typography>
-          <Typography>{distance.unit}</Typography>
+        <Stack
+          direction={'row'}
+          flexGrow={1}
+          justifyContent={'space-between'}
+          onClick={props.onTimeModeToggle}
+          sx={{ cursor: props.onTimeModeToggle ? 'pointer' : undefined }}
+        >
+          <Stack alignItems={'center'}>
+            <Typography level={'h3'} fontWeight={'bold'}>
+              {display.arrival}
+            </Typography>
+            <Typography level={'body-sm'}>{display.arrivalLabel}</Typography>
+          </Stack>
+          <Stack alignItems={'center'}>
+            <Typography level={'h3'}>{display.duration}</Typography>
+            <Typography level={'body-sm'}>{display.durationLabel}</Typography>
+          </Stack>
+          <Stack alignItems={'center'}>
+            <Typography level={'h3'}>{display.distance.length}</Typography>
+            <Typography level={'body-sm'}>
+              {display.distanceLabel ?? display.distance.unit}
+            </Typography>
+          </Stack>
         </Stack>
         <IconButton size={'lg'} variant={'soft'} onClick={toggleDisclosure}>
           <DisclosureIcon sx={{ transform: 'scale(1.25)' }} />
@@ -156,7 +182,7 @@ const ExpandedControls = ({
                 <ListItemDecorator>
                   <EditLocationAlt sx={{ transform: 'scale(1.25)' }} />
                 </ListItemDecorator>
-                Manage Stops
+                Durakları düzenle
               </ListItemButton>
             </ListItem>
           </>
@@ -167,7 +193,7 @@ const ExpandedControls = ({
             <ListItemDecorator>
               <Search sx={{ transform: 'scale(1.25)' }} />
             </ListItemDecorator>
-            Search along route
+            Rota üzerinde ara
           </ListItemButton>
         </ListItem>
         <ListDivider />
@@ -176,7 +202,7 @@ const ExpandedControls = ({
             <ListItemDecorator>
               <AltRoute sx={{ transform: 'scale(1.25)' }} />
             </ListItemDecorator>
-            Preview route
+            Rotanın tamamını gör
           </ListItemButton>
         </ListItem>
         <ListDivider />
@@ -185,7 +211,7 @@ const ExpandedControls = ({
             <ListItemDecorator>
               <FormatListBulleted sx={{ transform: 'scale(1.25)' }} />
             </ListItemDecorator>
-            Directions
+            Yol tarifi
           </ListItemButton>
         </ListItem>
 
@@ -196,7 +222,7 @@ const ExpandedControls = ({
           color={'danger'}
           onClick={onRouteEndClick}
         >
-          End Route
+          Rotayı bitir
         </Button>
         <Box ref={ref} />
       </List>

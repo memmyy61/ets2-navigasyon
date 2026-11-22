@@ -19,32 +19,32 @@ interface Destination {
 export const destinations: Record<PoiType, Destination> = {
   [PoiType.COMPANY]: {
     Icon: Unarchive,
-    label: 'Companies',
+    label: 'Şirketler',
     color: 'orange',
   },
   [PoiType.FUEL]: {
     Icon: LocalGasStation,
-    label: 'Fuel Stations',
+    label: 'Benzinlikler',
     color: '#008234',
   },
   [PoiType.REST]: {
     Icon: Hotel,
-    label: 'Rest Stops',
+    label: 'Mola yerleri',
     color: '#1f6eb7',
   },
   [PoiType.SERVICE]: {
     Icon: Build,
-    label: 'Service Centers',
+    label: 'Servisler',
     color: '#8e0d0d',
   },
   [PoiType.DEALER]: {
     Icon: LocalShipping,
-    label: 'Dealerships',
+    label: 'Bayiler',
     color: '#7c2391',
   },
   [PoiType.RECRUITING]: {
     Icon: PersonSearch,
-    label: 'Recruitment Agencies',
+    label: 'İşe alım ajansları',
     color: '#918d00',
   },
 };

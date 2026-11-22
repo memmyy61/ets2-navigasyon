@@ -3,6 +3,7 @@ import type { GameState } from '@truckermudgeon/navigation/types';
 import { runInAction } from 'mobx';
 import type { AppClient } from '../controllers/types';
 import type { ControlsStore, RouteStore, SessionStore } from '../stores/types';
+import { displayPrefs } from '../util/game-units';
 import { TelemetryTimeline } from '../util/telemetry-timeline';
 
 /**
@@ -49,6 +50,10 @@ export class TelemetryService {
               if (session.bindingStale) {
                 session.bindingStale = false;
               }
+              this.controls.gameTimeMinutes = gameState.gameTimeMinutes;
+              if (gameState.extra) {
+                this.controls.extra = gameState.extra;
+              }
               if (session.map === 'usa') {
                 this.controls.limit = gameState.speedLimit.mph;
                 this.controls.speed = Math.round(speedAbs * 2.236936);
@@ -78,11 +83,15 @@ export class TelemetryService {
             runInAction(() => (route.trailerPoint = event.data?.position));
             break;
           case 'mapUpdate':
-            runInAction(() => (session.map = event.data));
+            runInAction(() => {
+              session.map = event.data;
+              displayPrefs.map = event.data;
+            });
             localStorage.setItem('map', event.data);
             timeline.reset();
             break;
           case 'jobUpdate':
+            runInAction(() => (route.activeJob = event.data));
             break;
           case 'staleBinding':
             runInAction(() => (session.bindingStale = true));

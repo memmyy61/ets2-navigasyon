@@ -10,7 +10,6 @@ import {
   Divider,
   IconButton,
   Input,
-  Link,
   Stack,
   Typography,
 } from '@mui/joy';
@@ -94,7 +93,7 @@ export const SessionGate = (props: {
                   color={'neutral'}
                   sx={{ mr: 1 }}
                 />
-                Connecting...
+                Bağlanıyor...
               </Typography>
             ) : (
               <CardContent>
@@ -123,7 +122,7 @@ const Header = memo(() => {
           color: '#e00',
         }}
       >
-        pre-alpha
+        deneme
       </Typography>
       <Typography
         level={'h1'}
@@ -144,7 +143,7 @@ const Header = memo(() => {
           </IconButton>
         }
       >
-        TruckSim&nbsp;Navigator
+        ETS2&nbsp;Navigasyon
       </Typography>
     </>
   );
@@ -216,7 +215,7 @@ const Form = memo(
         props.onLoggedIn();
       } catch (err) {
         console.log('error after submitting code');
-        setError(err instanceof Error ? err.message : 'Login failed');
+        setError(err instanceof Error ? err.message : 'Giriş başarısız');
         setCode('');
       } finally {
         setSubmitting(false);
@@ -226,10 +225,7 @@ const Form = memo(
     return (
       <Stack textAlign={'center'} gap={'1em'}>
         <Typography>
-          Enter your{' '}
-          <Link underline={'always'} href={'/whats-a-pairing-code.html'}>
-            pairing code
-          </Link>
+          PC'deki BASLAT.bat penceresinde yazan <b>eşleştirme kodunu</b> girin
         </Typography>
 
         <form
@@ -280,7 +276,7 @@ const Form = memo(
               disabled={submitting}
               sx={{ flexBasis: '50%' }}
             >
-              Back
+              Geri
             </Button>
             <Button
               type={'submit'}
@@ -296,7 +292,7 @@ const Form = memo(
                 ) : null
               }
             >
-              {submitting ? 'Checking…' : 'Continue'}
+              {submitting ? 'Kontrol ediliyor…' : 'Devam'}
             </Button>
           </CardActions>
         </form>

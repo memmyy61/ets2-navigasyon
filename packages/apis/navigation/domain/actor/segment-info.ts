@@ -16,7 +16,7 @@ export function toSegmentInfo(
     .values()
     .find(c => c.nodeUid === node.uid);
 
-  let place = 'Your location';
+  let place = 'Konumunuz';
   let placeInfo = '';
   if (maybeCompany) {
     place = assertExists(tsMapData.companyDefs.get(maybeCompany.token)).name;

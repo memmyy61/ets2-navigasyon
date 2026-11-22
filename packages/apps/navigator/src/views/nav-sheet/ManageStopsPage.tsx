@@ -22,7 +22,7 @@ export const ManageStopsPage = observer(() => {
             return {
               id: lastNodeUid.toString(16) + '-' + index,
               description:
-                segment.steps.at(-1)!.maneuver.banner?.text ?? 'Waypoint',
+                segment.steps.at(-1)!.maneuver.banner?.text ?? 'Durak',
               nodeUid: lastNodeUid,
             };
           })

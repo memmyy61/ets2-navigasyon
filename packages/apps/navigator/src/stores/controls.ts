@@ -1,4 +1,5 @@
-import { makeAutoObservable } from 'mobx';
+import type { ExtraTelemetry } from '@truckermudgeon/navigation/types';
+import { makeAutoObservable, observable } from 'mobx';
 import { CameraMode } from './camera';
 import type {
   CameraStore,
@@ -12,6 +13,8 @@ export class ControlsStoreImpl implements ControlsStore {
   bearing = 0;
   limit = 0;
   speed = 0;
+  gameTimeMinutes: number | undefined = undefined;
+  extra: ExtraTelemetry | undefined = undefined;
 
   constructor(
     private readonly session: SessionStore,
@@ -19,7 +22,7 @@ export class ControlsStoreImpl implements ControlsStore {
     private readonly route: RouteStore,
     private readonly navSheet: NavSheetStore,
   ) {
-    makeAutoObservable(this);
+    makeAutoObservable(this, { extra: observable.ref });
   }
 
   get units(): 'imperial' | 'metric' {

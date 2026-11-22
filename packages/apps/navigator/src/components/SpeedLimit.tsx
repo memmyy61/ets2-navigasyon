@@ -51,7 +51,7 @@ export const SpeedLimit = forwardRef((props: SpeedLimitProps, ref) => {
           level={'body-md'}
           sx={{ color }}
         >
-          {props.units === 'imperial' ? 'mph' : 'kph'}
+          {props.units === 'imperial' ? 'mph' : 'km/sa'}
         </Typography>
       </Stack>
     </Stack>
@@ -79,9 +79,9 @@ const SpeedLimitMph = forwardRef((props: { limit: number }, ref) => (
         level={'body-xs'}
         sx={{ color: 'common.black' }}
       >
-        SPEED
+        HIZ
         <br />
-        LIMIT
+        SINIRI
       </Typography>
       <Typography
         textAlign={'center'}

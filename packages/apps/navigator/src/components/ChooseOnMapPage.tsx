@@ -9,10 +9,10 @@ export const ChooseOnMapPage = (props: ChooseOnMapPageProps) => {
     <Stack direction={'column'} gap={2} flexGrow={1}>
       <Card size={'lg'} variant={'soft'}>
         <Typography level={'body-md'} fontSize={'lg'}>
-          Pan and zoom to adjust
+          Ayarlamak için haritayı kaydırın ve yakınlaştırın
         </Typography>
         <Button size={'lg'} onClick={props.onUseThisPointClick}>
-          Done
+          Tamam
         </Button>
       </Card>
     </Stack>

@@ -1,6 +1,7 @@
 import polyline from '@mapbox/polyline';
 import { assertExists } from '@truckermudgeon/base/assert';
 import type {
+  JobState,
   Route,
   RouteIndex,
   RouteStep,
@@ -20,6 +21,7 @@ export class RouteStoreImpl implements RouteStore {
   truckPoint: [lon: number, lat: number] = [0, 0];
   trailerPoint: [lon: number, lat: number] | undefined;
   segmentComplete: SegmentInfo | undefined = undefined;
+  activeJob: JobState | undefined = undefined;
 
   constructor() {
     makeAutoObservable(this, {
@@ -28,6 +30,7 @@ export class RouteStoreImpl implements RouteStore {
       truckPoint: observable.ref,
       trailerPoint: observable.ref,
       segmentComplete: observable.ref,
+      activeJob: observable.ref,
     });
   }
 

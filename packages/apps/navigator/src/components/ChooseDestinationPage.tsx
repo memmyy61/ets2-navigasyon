@@ -41,10 +41,10 @@ export interface ChooseDestinationPageProps {
 const strings: Record<ChooseDestinationPageMode, { categoriesTitle: string }> =
   {
     chooseDestination: {
-      categoriesTitle: 'Show nearby',
+      categoriesTitle: 'Yakındakiler',
     },
     searchAlong: {
-      categoriesTitle: 'Search along the way',
+      categoriesTitle: 'Rota üzerinde ara',
     },
   };
 
@@ -56,9 +56,7 @@ export const ChooseDestinationPage = (props: ChooseDestinationPageProps) => {
           loading={props.showSearchLoading}
           onSelect={props.onSelect}
           onInputChange={props.onInputChange}
-          placeholderText={
-            'Search companies, facilities, points of interest...'
-          }
+          placeholderText={'Şirket, şehir, tesis ara...'}
           options={props.options}
         />
         <Button
@@ -72,7 +70,7 @@ export const ChooseDestinationPage = (props: ChooseDestinationPageProps) => {
           color={'neutral'}
           onClick={() => props.onChooseOnMapClick()}
         >
-          Choose on map
+          Haritadan seç
         </Button>
       </Card>
       <Divider />

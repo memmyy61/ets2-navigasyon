@@ -23,7 +23,7 @@ export const SegmentCompleteToast = (props: SegmentCompleteToastProps) => {
       }}
     >
       <Stack gap={1} width={'100%'}>
-        <Typography level={'h3'}>You have arrived</Typography>
+        <Typography level={'h3'}>Varış noktasına ulaştınız</Typography>
         <Typography level={'h4'} color={'neutral'}>
           {props.place}{' '}
           <Typography color={'neutral'}>{props.placeInfo}</Typography>
@@ -32,7 +32,7 @@ export const SegmentCompleteToast = (props: SegmentCompleteToastProps) => {
       <Stack gap={1} width={'100%'}>
         {!props.isFinalSegment && (
           <Button size={'lg'} onClick={props.onContinueClick}>
-            Continue
+            Devam et
           </Button>
         )}
         <Button
@@ -40,7 +40,7 @@ export const SegmentCompleteToast = (props: SegmentCompleteToastProps) => {
           variant={!props.isFinalSegment ? 'outlined' : 'solid'}
           onClick={props.onEndClick}
         >
-          End Trip
+          Yolculuğu bitir
         </Button>
       </Stack>
     </Snackbar>

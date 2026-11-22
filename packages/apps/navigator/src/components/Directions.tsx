@@ -142,7 +142,7 @@ const ThenHint = (props: { hint: NonNullable<StepManeuver['thenHint']> }) => {
         sx={{ pointerEvents: 'auto' }}
       >
         <Typography textColor={'#fff'} level={'body-lg'}>
-          Then
+          Sonra
         </Typography>
         <Box width={'2.5em'} height={'2.5em'}>
           <LaneIcon

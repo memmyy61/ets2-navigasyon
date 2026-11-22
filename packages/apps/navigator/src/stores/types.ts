@@ -1,4 +1,6 @@
 import type {
+  ExtraTelemetry,
+  JobState,
   Route,
   RouteIndex,
   RouteStep,
@@ -16,6 +18,10 @@ export interface ControlsStore {
   bearing: number;
   limit: number;
   speed: number;
+  /** ETS2 Navigasyon: in-game clock, minutes since Day 0 (Monday 00:00). */
+  gameTimeMinutes?: number;
+  /** ETS2 Navigasyon: gauges sent by the telemetry client. */
+  extra?: ExtraTelemetry;
   readonly units: 'imperial' | 'metric';
   readonly showRecenterFab: boolean;
   readonly showRouteFab: boolean;
@@ -102,6 +108,8 @@ export interface RouteStore {
   truckPoint: readonly [lon: number, lat: number];
   trailerPoint: readonly [lon: number, lat: number] | undefined;
   segmentComplete: SegmentInfo | undefined;
+  /** ETS2 Navigasyon: the current job, if the server recognized it. */
+  activeJob?: JobState;
 
   readonly activeRouteSummary: RouteSummary | undefined;
   readonly activeRouteToFirstWayPointSummary: RouteSummary | undefined;

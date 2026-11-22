@@ -56,16 +56,16 @@ export const WaitingForTelemetry = (props: {
         <Divider />
         {state === 'lost' ? (
           <Typography fontSize={'sm'} color={'neutral'}>
-            Updates from the game or Navigator client have stopped. This will
-            clear when they resume.
+            Oyundan veya telemetri istemcisinden veri gelmiyor. Veri gelmeye
+            başlayınca bu mesaj kaybolur.
           </Typography>
         ) : (
           <Typography component={'div'} fontSize={'sm'} color={'neutral'}>
-            Please make sure:
+            Şunları kontrol edin:
             <ul style={{ paddingLeft: '1.5em', margin: '1ex 0 0 0' }}>
-              <li>ATS or ETS2 is running</li>
-              <li>the Navigator client is running</li>
-              <li>your truck is on the road</li>
+              <li>ETS2 açık</li>
+              <li>PC'de BASLAT.bat (telemetri istemcisi) çalışıyor</li>
+              <li>kamyonunuz yolda</li>
             </ul>
           </Typography>
         )}
@@ -74,13 +74,13 @@ export const WaitingForTelemetry = (props: {
             <Typography fontSize={'sm'} color={'neutral'}>
               {state === 'lost' ? (
                 <>
-                  Otherwise, use <b>Try again</b> to reload, or{' '}
-                  <b>Enter pairing code</b> to switch clients.
+                  Olmazsa <b>Tekrar dene</b> ile yenileyin veya{' '}
+                  <b>Eşleştirme kodu gir</b> ile başka istemciye bağlanın.
                 </>
               ) : (
                 <>
-                  Use <b>Try again</b> to force a reconnect, or{' '}
-                  <b>Enter pairing code</b> to start over.
+                  <b>Tekrar dene</b> ile yeniden bağlanın veya{' '}
+                  <b>Eşleştirme kodu gir</b> ile baştan başlayın.
                 </>
               )}
             </Typography>
@@ -95,10 +95,10 @@ export const WaitingForTelemetry = (props: {
                 color={'neutral'}
                 onClick={() => window.location.reload()}
               >
-                Try again
+                Tekrar dene
               </Button>
               <Button variant={'solid'} color={'primary'} onClick={onRePair}>
-                Enter pairing code
+                Eşleştirme kodu gir
               </Button>
             </Stack>
           </Stack>
@@ -111,10 +111,10 @@ export const WaitingForTelemetry = (props: {
 function titleFor(state: WaitingForTelemetryState): string {
   switch (state) {
     case 'awaiting':
-      return 'Waiting for game telemetry...';
+      return 'Oyun verisi bekleniyor...';
     case 'orphaned':
-      return 'Still waiting for game telemetry...';
+      return 'Hâlâ oyun verisi bekleniyor...';
     case 'lost':
-      return 'Game telemetry lost';
+      return 'Oyun verisi kesildi';
   }
 }

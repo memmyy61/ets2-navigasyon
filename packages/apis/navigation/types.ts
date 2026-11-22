@@ -8,6 +8,7 @@ import type {
   RoundaboutBranchType,
 } from './constants';
 import type {
+  ExtraTelemetrySchema,
   JobLocationSchema,
   SpeedSchema,
   TruckSimTelemetrySchema,
@@ -231,6 +232,10 @@ export interface GameState extends TelemetrySample {
   game: 'ats' | 'ets2';
   speedLimit: { mph: number; kph: number };
   scale: number;
+  /** in-game clock: minutes since Day 0 (Monday 00:00). */
+  gameTimeMinutes?: number;
+  /** gauges (fuel, game GPS estimates, job...), if the client sends them. */
+  extra?: ExtraTelemetry;
 }
 
 export interface SegmentInfo {
@@ -244,6 +249,7 @@ export type Speed = z.infer<typeof SpeedSchema>;
 export type JobLocation = z.infer<typeof JobLocationSchema>;
 
 export type TruckSimTelemetry = z.infer<typeof TruckSimTelemetrySchema>;
+export type ExtraTelemetry = z.infer<typeof ExtraTelemetrySchema>;
 /** An index to a node within a `Route`. */
 export interface RouteIndex {
   /** index into `Route.segments` */

@@ -38,6 +38,7 @@ import {
 } from '@mui/joy';
 import type { CSSProperties } from 'react';
 import { forwardRef, useState } from 'react';
+import { toDisplaySeconds } from '../util/game-units';
 import { toDuration } from './text';
 
 interface Waypoint {
@@ -75,7 +76,7 @@ export const ManageStopsPage = (props: ManageStopsPageProps) => {
       },
     }),
   );
-  const duration = toDuration(props.summary.minutes * 60);
+  const duration = toDuration(toDisplaySeconds(props.summary.minutes * 60));
 
   function handleDragStart(event: DragStartEvent) {
     const { active } = event;
@@ -105,7 +106,7 @@ export const ManageStopsPage = (props: ManageStopsPageProps) => {
             totalItems={props.waypoints.length}
           />
           <ListItemContent sx={{ border: '1px solid transparent', padding: 1 }}>
-            <Typography>Your location</Typography>
+            <Typography>Konumunuz</Typography>
           </ListItemContent>
         </ListItem>
         <DndContext
@@ -155,7 +156,7 @@ export const ManageStopsPage = (props: ManageStopsPageProps) => {
           Total trip: {duration.string}
         </Typography>
         <Button size={'lg'} onClick={props.onDoneClick}>
-          Done
+          Tamam
         </Button>
       </Stack>
     </Stack>

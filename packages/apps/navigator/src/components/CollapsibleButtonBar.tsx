@@ -23,7 +23,7 @@ export const CollapsibleButtonBar = (props: {
             e.stopPropagation();
           }}
         >
-          Routes
+          Rotalar
         </Button>
         <Button
           variant={'solid'}
@@ -33,7 +33,7 @@ export const CollapsibleButtonBar = (props: {
             e.stopPropagation();
           }}
         >
-          Go!
+          Başla
         </Button>
       </ButtonGroup>
     </Collapse>

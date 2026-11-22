@@ -12,6 +12,7 @@ import type {
   SearchResultWithRelativeTruckInfo,
 } from '@truckermudgeon/navigation/types';
 import type { ReactElement } from 'react';
+import { toGameMeters } from '../util/game-units';
 import { toCompassPoint } from '../util/to-compass-point';
 import { SpriteImage } from './SpriteImage';
 import {
@@ -28,9 +29,10 @@ export const DestinationItem = (props: {
   onDestinationHighlight: () => void;
   CollapsibleButtonBar: () => ReactElement;
 }) => {
+  // ETS2 Navigasyon: game-scale distance
   const toLengthAndUnit = (meters: number) =>
     _toLengthAndUnit(
-      meters,
+      toGameMeters(meters),
       props.units === 'imperial'
         ? defaultImperialOptions
         : defaultMetricOptions,
