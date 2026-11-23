@@ -5,6 +5,7 @@ import type { GameContext } from '../../domain/game-context';
 import type { LookupService } from '../../domain/lookup-data';
 import type { MetricsService } from '../metrics/service';
 import type { Options } from '../workers/find-route-worker';
+import findRoutesInline from '../workers/find-route-worker';
 import { createPool } from '../workers/pool';
 
 type RouteOptions = Omit<Options, 'routeContext'>;
@@ -56,8 +57,7 @@ export function createRoutingService(
         import.meta.url,
       ),
       workerData: { routeContext },
-      inline: async () =>
-        (await import('../workers/find-route-worker')).default,
+      inline: () => Promise.resolve(findRoutesInline),
     });
   });
 

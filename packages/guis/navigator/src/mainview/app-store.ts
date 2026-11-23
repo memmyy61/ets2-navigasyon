@@ -4,9 +4,12 @@ import type {
   BunRPC,
   Delta,
   HealthCheckEvent,
+  ImportProgress,
+  ServerState,
   SocketEvent,
   TelemetryGuiRPC,
   TelemetryType,
+  UpdateState,
 } from '../bun/types';
 import type { Mode } from './ModeSelector';
 
@@ -59,6 +62,12 @@ export class AppStore {
   deltas: Delta[] = [];
   connectedAt: number | undefined;
 
+  // ETS2 Navigasyon: local server, map data import, updates
+  serverState: ServerState | undefined = undefined;
+  importProgress: ImportProgress | undefined = undefined;
+  updateState: UpdateState = { state: 'checking' };
+  private telemetryClientStarted = false;
+
   private readonly deltaIntervalId: NodeJS.Timeout;
 
   constructor(readonly rpc: BunRPC) {
@@ -71,6 +80,25 @@ export class AppStore {
     });
     rpc.addMessageListener('*', this.setupListeners);
     this.deltaIntervalId = setInterval(() => this.cleanupDeltas(), 5000);
+    void rpc.request
+      .getServerState()
+      .then(action(state => this.onServerState(state)));
+  }
+
+  /** the phone URL to show / encode in the QR code. */
+  get phoneUrl(): string {
+    return this.serverState?.phoneUrls[0] ?? 'http://localhost:62840';
+  }
+
+  private onServerState(state: ServerState) {
+    this.serverState = state;
+    if (state.state !== 'importing') {
+      this.importProgress = undefined;
+    }
+    if (state.state === 'ready' && !this.telemetryClientStarted) {
+      this.telemetryClientStarted = true;
+      void this.rpc.request.startTelemetryClient();
+    }
   }
 
   dispose() {
@@ -132,69 +160,69 @@ export class AppStore {
     switch (this.appState) {
       case 'healthChecking':
         iconColor = 'neutral';
-        text = 'Connecting...';
-        tooltip = 'Checking if server is available';
+        text = 'Bağlanıyor...';
+        tooltip = 'Sunucu kontrol ediliyor';
         break;
       case 'healthError':
         iconColor = 'danger';
-        text = 'Disconnected';
+        text = 'Bağlantı yok';
         tooltip =
           this.errorMessage == null ||
           this.errorMessage.startsWith('Unable to connect.')
-            ? 'The TruckSim Navigator server is down. Try again later.'
+            ? 'Navigasyon sunucusuna ulaşılamadı.'
             : this.errorMessage;
         break;
       case 'socketConnecting':
         iconColor = 'neutral';
-        text = 'Connecting...';
-        tooltip = 'Connecting to server...';
+        text = 'Bağlanıyor...';
+        tooltip = 'Sunucuya bağlanılıyor...';
         break;
       case 'socketClosed':
         iconColor = 'warning';
-        text = 'Disconnected';
-        tooltip = 'The server has closed the connection.';
+        text = 'Bağlantı kesildi';
+        tooltip = 'Sunucu bağlantıyı kapattı. Uygulamayı yeniden başlatın.';
         break;
       case 'socketError':
         iconColor = 'danger';
-        text = 'Disconnected';
-        tooltip = 'The server has encountered an error.';
+        text = 'Bağlantı kesildi';
+        tooltip = 'Sunucuda bir hata oluştu. Uygulamayı yeniden başlatın.';
         break;
       case 'handShaking':
         iconColor = 'neutral';
-        text = 'Connecting...';
-        tooltip = 'Performing server handshake...';
+        text = 'Bağlanıyor...';
+        tooltip = 'Sunucuyla eşleşiliyor...';
         break;
       case 'handshakeError':
         iconColor = 'danger';
-        text = 'Disconnected';
-        tooltip = 'The server encountered an error during the handshake.';
+        text = 'Bağlantı yok';
+        tooltip = 'Sunucuyla eşleşirken hata oluştu.';
         break;
       case 'waitingForPairing':
         iconColor = 'neutral';
-        text = 'Waiting for device...';
-        tooltip = 'Waiting for a device to be paired.';
+        text = 'Telefon bekleniyor...';
+        tooltip = 'Telefonun eşleşmesi bekleniyor.';
         break;
       case 'telemetryError':
         iconColor = 'danger';
-        text = 'Telemetry error';
-        tooltip = 'Error while sending truck telemetry.';
+        text = 'Telemetri hatası';
+        tooltip = 'Oyun verisi gönderilirken hata oluştu.';
         break;
       case 'telemetryUndefined':
         iconColor = 'warning';
-        text = 'Waiting for game telemetry...';
+        text = 'Oyun bekleniyor...';
         tooltip =
-          'Telemetry is unavailable. Make sure ATS is running and a telemetry plugin is installed.';
+          'Oyundan veri gelmiyor. ETS2 açık mı ve scs-telemetry.dll eklentisi kurulu mu?';
         break;
       case 'telemetryAllZeroes':
         iconColor = 'warning';
-        text = 'Waiting for truck...';
-        tooltip = 'Waiting for truck to appear in the game world.';
+        text = 'Kamyon bekleniyor...';
+        tooltip = 'Bir profile girip kamyonla yola çıkın.';
         break;
       case 'telemetryNormal':
         this.connectedAt ??= Date.now();
         iconColor = 'success';
-        text = 'Connected';
-        tooltip = 'Connected to server and sending telemetry data.';
+        text = 'Bağlı';
+        tooltip = 'Oyun verisi telefona gönderiliyor.';
         break;
       default:
         throw new UnreachableError(this.appState);
@@ -269,6 +297,21 @@ export class AppStore {
               this.appState = 'telemetryNormal';
               break;
           }
+          break;
+        }
+        case 'serverState': {
+          const [state] = args as [ServerState];
+          this.onServerState(state);
+          break;
+        }
+        case 'importProgress': {
+          const [progress] = args as [ImportProgress];
+          this.importProgress = progress;
+          break;
+        }
+        case 'updateState': {
+          const [state] = args as [UpdateState];
+          this.updateState = state;
           break;
         }
         case 'telemetryDeltaMs': {

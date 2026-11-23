@@ -21,7 +21,7 @@ export const QrCode = (props: QrCodeProps) => {
       }}
     >
       <Typography width={'100%'} fontSize={'sm'} sx={{ color: 'neutral.500' }}>
-        Or scan QR code:
+        Ya da QR kodu telefonun kamerasıyla okutun:
       </Typography>
       <Box
         sx={{ width: '90%', pt: 1, ml: -0.5 }}

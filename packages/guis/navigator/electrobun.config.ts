@@ -2,15 +2,24 @@ import type { ElectrobunConfig } from 'electrobun';
 
 export default {
   app: {
-    name: 'TruckSim Navigator',
-    identifier: 'com.truckermudgeon.navigator-client',
-    version: '0.2.0',
+    name: 'ETS2 Navigasyon',
+    identifier: 'com.memmyy61.ets2-navigasyon',
+    // CI sets APP_VERSION (e.g. 0.1.<run number>)
+    version: process.env.APP_VERSION ?? '0.1.0',
+  },
+  release: {
+    // updates are published as GitHub release assets; Electrobun fetches
+    // `<baseUrl>/stable-win-x64-update.json` etc.
+    baseUrl:
+      'https://github.com/memmyy61/ets2-navigasyon/releases/latest/download',
   },
   build: {
     // Vite builds to dist/, we copy from there
     copy: {
       'dist/index.html': 'views/mainview/index.html',
       'dist/assets': 'views/mainview/assets',
+      // ETS2 Navigasyon: the phone app, served by the embedded server
+      '../../apps/navigator/build': 'telefon',
     },
     bun: {
       define: {

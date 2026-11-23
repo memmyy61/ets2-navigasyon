@@ -11,7 +11,8 @@
   "exports": {
     "./constants": "./constants.ts",
     "./types": "./types.ts",
-    "./helpers": "./helpers.ts"
+    "./helpers": "./helpers.ts",
+    "./server": "./server.ts"
   },
   "devDependencies": {
     "@types/mapbox__polyline": "^1.0.5",

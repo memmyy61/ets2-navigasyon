@@ -10,7 +10,9 @@ import type { SearchResult } from '../../types';
 import type { MetricsService } from '../metrics/service';
 import type { WorkerPool } from '../workers/pool';
 import { createPool } from '../workers/pool';
+import reduceSearchResultsInline from '../workers/search-results-worker';
 import type { Options as SearchWorkerOptions } from '../workers/search-worker';
+import searchInline from '../workers/search-worker';
 
 // searchData: ProcessedSearchData,
 // graphNodeRTree: PointRBush<{ x: number; y: number; z: number; node: Node }>,
@@ -31,8 +33,7 @@ export function createSearchService(
               rbushJSON: lookups.getData({ map: game }).searchData
                 .searchDataLngLatRTreeJSON,
             },
-            inline: async () =>
-              (await import('../workers/search-worker')).default,
+            inline: () => Promise.resolve(searchInline),
           })
         : undefined,
   );
@@ -65,8 +66,7 @@ export function createSearchService(
               rbushJSON: lookups.getData({ map: game }).searchData
                 .searchDataLngLatRTreeJSON,
             },
-            inline: async () =>
-              (await import('../workers/search-results-worker')).default,
+            inline: () => Promise.resolve(reduceSearchResultsInline),
           })
         : undefined,
   );

@@ -17,7 +17,8 @@ mobx.configure({
 });
 
 const telemetryGuiRPC = Electroview.defineRPC<TelemetryGuiRPC>({
-  maxRequestTime: 5000,
+  // importing map data can take a while
+  maxRequestTime: 0,
   handlers: {},
 });
 const electrobun = new Electrobun.Electroview({ rpc: telemetryGuiRPC });
@@ -25,14 +26,12 @@ const rpc: BunRPC = electrobun.rpc!;
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <CssVarsProvider defaultMode={'system'} modeStorageKey={'tm-mode'}>
+    <CssVarsProvider defaultMode={'dark'} modeStorageKey={'ets2nav-mode'}>
       <CssBaseline />
       <App rpc={rpc} />
     </CssVarsProvider>
   </StrictMode>,
 );
 
-document.addEventListener(
-  'DOMContentLoaded',
-  () => void rpc.request.startTelemetryClient(),
-);
+// ETS2 Navigasyon: the telemetry client is started by the AppStore once the
+// local navigation server is ready.

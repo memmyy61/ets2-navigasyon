@@ -7,7 +7,11 @@ import type { WSRegistry } from './infra/ws/registry';
 import { attachWSServer } from './infra/ws/server';
 import { handleUpgrade } from './infra/ws/upgrade';
 
-export function startServer(dataDir: string) {
+/**
+ * Starts the navigation server. Resolves once it's listening; rejects if it
+ * can't (e.g., the port is already in use).
+ */
+export function startServer(dataDir: string): Promise<{ port: number }> {
   const services = initServices(dataDir);
   const server = http.createServer(createHttpHandler({ services }));
   const wss = new WebSocketServer({ noServer: true });
@@ -30,9 +34,14 @@ export function startServer(dataDir: string) {
     wsRegistry,
   });
 
-  server.listen(env.PORT, () =>
-    console.log(`navigation server listening on port ${env.PORT}`),
-  );
+  return new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(env.PORT, () => {
+      server.off('error', reject);
+      console.log(`navigation server listening on port ${env.PORT}`);
+      resolve({ port: env.PORT });
+    });
+  });
 }
 
 function setupShutdownHandlers(opts: {

@@ -1,12 +1,13 @@
 import {
+  Button,
   Divider,
   LinearProgress,
   Modal,
   ModalClose,
   ModalDialog,
   Stack,
+  Typography,
 } from '@mui/joy';
-import { navigatorUrl } from '@truckermudgeon/navigator-client/constants';
 import { action } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { memo, useState } from 'react';
@@ -22,6 +23,7 @@ import { LatencyStatus } from './LatencyStatus';
 import { ModeSelector } from './ModeSelector';
 import { PairingCode } from './PairingCode';
 import { QrCode } from './QrCode';
+import { ServerPage } from './ServerPage';
 import { TitleBar } from './TitleBar';
 
 const App = memo((props: { rpc: BunRPC }) => {
@@ -60,6 +62,16 @@ const App = memo((props: { rpc: BunRPC }) => {
     );
   });
   const CurrentPage = observer(() => {
+    if (store.serverState?.state !== 'ready') {
+      return (
+        <ServerPage
+          serverState={store.serverState}
+          importProgress={store.importProgress}
+          onImport={source => void props.rpc.request.importData({ source })}
+          onOpenDataFolder={() => void props.rpc.request.openDataFolder()}
+        />
+      );
+    }
     if (store.isTerminal) {
       return (
         <ErrorPage
@@ -73,13 +85,16 @@ const App = memo((props: { rpc: BunRPC }) => {
           <PairingCode
             reconnected={store.reconnected}
             pairingCode={store.pairingCode}
-            navigatorUrl={navigatorUrl}
+            navigatorUrl={store.phoneUrl}
             onNavigatorUrlClick={() =>
               props.rpc.request.openBrowser({ page: 'navigator' })
             }
           />
           <Divider orientation={'vertical'} />
-          <QrCode pairingCode={store.pairingCode} navigatorUrl={navigatorUrl} />
+          <QrCode
+            pairingCode={store.pairingCode}
+            navigatorUrl={store.phoneUrl}
+          />
         </>
       );
     } else if (store.mode === 'timeline') {
@@ -96,6 +111,39 @@ const App = memo((props: { rpc: BunRPC }) => {
           <LinearProgress color="neutral" size="lg" />
         </Stack>
       );
+    }
+  });
+  // ETS2 Navigasyon: update notice in the footer
+  const _UpdateStatus = observer(() => {
+    switch (store.updateState.state) {
+      case 'downloading':
+        return (
+          <Typography level={'body-xs'} color={'neutral'}>
+            Güncelleme indiriliyor...
+          </Typography>
+        );
+      case 'ready':
+        return (
+          <Button
+            size={'sm'}
+            color={'success'}
+            onClick={() => void props.rpc.request.applyUpdate()}
+          >
+            Güncellemeyi yükle (yeniden başlar)
+          </Button>
+        );
+      case 'error':
+        return (
+          <Typography
+            level={'body-xs'}
+            color={'neutral'}
+            title={store.updateState.message}
+          >
+            Güncelleme kontrol edilemedi
+          </Typography>
+        );
+      default:
+        return <div />;
     }
   });
   const _TitleBar = observer(() => {
@@ -146,6 +194,7 @@ const App = memo((props: { rpc: BunRPC }) => {
           }}
         >
           <_ConnectionStatus />
+          <_UpdateStatus />
           <_LatencyStatus />
         </Stack>
       </Stack>

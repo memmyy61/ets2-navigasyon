@@ -8,4 +8,7 @@ const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const outDir = path.join(__dirname, '../../../out');
 
-startServer(process.argv.slice(2)[0] ?? outDir);
+startServer(process.argv.slice(2)[0] ?? outDir).catch((err: unknown) => {
+  console.error(err);
+  process.exit(1);
+});

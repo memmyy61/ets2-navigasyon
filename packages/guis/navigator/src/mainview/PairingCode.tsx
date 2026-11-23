@@ -18,9 +18,9 @@ export const PairingCode = (props: PairingCodeProps) => {
       }}
     >
       <Typography fontSize={'sm'} sx={{ color: 'neutral.500' }}>
-        {reconnected ? 'To pair an additional device, visit' : 'Visit'}{' '}
-        <Link onClick={onNavigatorUrlClick}>{navigatorUrl}</Link> and enter
-        pairing&nbsp;code:
+        {reconnected ? 'Başka bir cihaz bağlamak için telefonda' : 'Telefonda'}{' '}
+        <Link onClick={onNavigatorUrlClick}>{navigatorUrl}</Link> adresini açıp
+        şu eşleştirme&nbsp;kodunu&nbsp;girin:
       </Typography>
       <Box
         sx={{
