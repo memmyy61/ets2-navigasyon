@@ -1,12 +1,11 @@
 import type { Context, Route, RouteKey } from '@truckermudgeon/map/routing';
 import { CacheableMemory } from 'cacheable';
-import Tinypool from 'tinypool';
 import type { RoutingService } from '../../domain/actor/generate-routes';
 import type { GameContext } from '../../domain/game-context';
 import type { LookupService } from '../../domain/lookup-data';
-import { env } from '../../env';
 import type { MetricsService } from '../metrics/service';
 import type { Options } from '../workers/find-route-worker';
+import { createPool } from '../workers/pool';
 
 type RouteOptions = Omit<Options, 'routeContext'>;
 
@@ -51,16 +50,14 @@ export function createRoutingService(
       map: game,
     };
 
-    return new Tinypool({
-      minThreads: 1,
-      maxThreads: env.WORKER_THREADS,
-      filename: new URL(
+    return createPool<Options>({
+      wrapperUrl: new URL(
         '../workers/find-route-worker-wrapper.js',
         import.meta.url,
-      ).href,
-      workerData: {
-        routeContext,
-      },
+      ),
+      workerData: { routeContext },
+      inline: async () =>
+        (await import('../workers/find-route-worker')).default,
     });
   });
 

@@ -1,4 +1,3 @@
-import Tinypool from 'tinypool';
 import type {
   SearchReducerOptions,
   SearchSearcherOptions,
@@ -7,9 +6,11 @@ import type {
 import { SearchServiceImpl } from '../../domain/actor/search';
 import type { GameContext } from '../../domain/game-context';
 import type { LookupService } from '../../domain/lookup-data';
-import { env } from '../../env';
 import type { SearchResult } from '../../types';
 import type { MetricsService } from '../metrics/service';
+import type { WorkerPool } from '../workers/pool';
+import { createPool } from '../workers/pool';
+import type { Options as SearchWorkerOptions } from '../workers/search-worker';
 
 // searchData: ProcessedSearchData,
 // graphNodeRTree: PointRBush<{ x: number; y: number; z: number; node: Node }>,
@@ -21,17 +22,17 @@ export function createSearchService(
   const [atsSearcherPool, ets2SearcherPool] = (['usa', 'europe'] as const).map(
     game =>
       lookups.hasData(game)
-        ? new Tinypool({
-            minThreads: 1,
-            maxThreads: env.WORKER_THREADS,
-            filename: new URL(
+        ? createPool<SearchWorkerOptions>({
+            wrapperUrl: new URL(
               '../workers/search-worker-wrapper.js',
               import.meta.url,
-            ).href,
+            ),
             workerData: {
               rbushJSON: lookups.getData({ map: game }).searchData
                 .searchDataLngLatRTreeJSON,
             },
+            inline: async () =>
+              (await import('../workers/search-worker')).default,
           })
         : undefined,
   );
@@ -55,17 +56,17 @@ export function createSearchService(
   const [atsReducerPool, ets2ReducerPool] = (['usa', 'europe'] as const).map(
     game =>
       lookups.hasData(game)
-        ? new Tinypool({
-            minThreads: 1,
-            maxThreads: env.WORKER_THREADS,
-            filename: new URL(
+        ? createPool<SearchReducerOptions>({
+            wrapperUrl: new URL(
               '../workers/search-results-worker-wrapper.js',
               import.meta.url,
-            ).href,
+            ),
             workerData: {
               rbushJSON: lookups.getData({ map: game }).searchData
                 .searchDataLngLatRTreeJSON,
             },
+            inline: async () =>
+              (await import('../workers/search-results-worker')).default,
           })
         : undefined,
   );
@@ -98,9 +99,9 @@ export function createSearchService(
 }
 
 function assertPool(
-  pool: Tinypool | undefined,
+  pool: WorkerPool | undefined,
   map: GameContext['map'],
-): Tinypool {
+): WorkerPool {
   if (!pool) {
     throw new Error(`no ${map} map data loaded`);
   }
