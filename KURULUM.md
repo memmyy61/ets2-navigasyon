@@ -17,6 +17,24 @@ Bu proje [truckermudgeon/maps](https://github.com/truckermudgeon/maps) (GPL v3)
                                  telefon tarayıcısı
 ```
 
+## Windows uygulaması (önerilen)
+
+1. Kurulum dosyasını indirin, zip'ten çıkarıp `ETS2 Navigasyon-Setup.exe`'yi
+   çalıştırın (Windows uyarı verirse **Ek bilgi → Yine de çalıştır**):
+   https://github.com/memmyy61/ets2-navigasyon/releases/latest/download/stable-win-x64-ETS2Navigasyon-Setup.zip
+2. İlk açılışta uygulama harita verisini ister: Ubuntu'da üretilmiş
+   `~/ets2-navigasyon/out` klasörünü bulur, **Kopyala**'ya basın (bir kez).
+3. Telefonu PC ile aynı ağa (telefon hotspot'u veya ev Wi-Fi'si) bağlayıp
+   uygulamadaki QR kodu okutun. Windows güvenlik duvarı izin sorarsa verin.
+4. Güncellemeler: uygulama açılışta GitHub'a bakar; yeni sürüm varsa altta
+   **Güncellemeyi yükle** düğmesi çıkar.
+
+Harita verisi `%LOCALAPPDATA%\ETS2Navigasyon\veri` klasöründedir. Oyun
+güncellemesi veya yeni DLC sonrası Ubuntu'da `./scripts/veri-uret.sh`
+çalıştırıp uygulamadaki veriyi yenilemek gerekir.
+
+Aşağıdaki Ubuntu tabanlı kurulum, harita verisini üretmek ve geliştirme içindir.
+
 ## Gerekenler
 
 - Windows 11, Steam'de ETS2
