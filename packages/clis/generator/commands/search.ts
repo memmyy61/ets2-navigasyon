@@ -157,36 +157,47 @@ export function handler(args: BuilderArguments<typeof builder>) {
     cityToSearchFeature(city, context),
   );
 
-  const scenery = sceneryTowns.features.map(f => {
-    let state;
-    if (args.map === 'usa') {
-      const [country, stateCode] = f.properties.country.split('-');
-      if (country !== 'US') {
-        throw new Error();
+  const knownCountryCodes = new Set(
+    [...tsMapData.countries.values()].map(c => c.code),
+  );
+  const scenery = sceneryTowns.features
+    // data subsets may not include every country referenced by the
+    // (global) scenery town list.
+    .filter(
+      f => args.map === 'usa' || knownCountryCodes.has(f.properties.country),
+    )
+    .map(f => {
+      let state;
+      if (args.map === 'usa') {
+        const [country, stateCode] = f.properties.country.split('-');
+        if (country !== 'US') {
+          throw new Error();
+        }
+        state = assertExists(
+          tsMapData.countries.values().find(c => c.code === stateCode),
+        );
+      } else {
+        state = assertExists(
+          tsMapData.countries
+            .values()
+            .find(c => c.code === f.properties.country),
+          'unknown country code: ' + f.properties.country,
+        );
       }
-      state = assertExists(
-        tsMapData.countries.values().find(c => c.code === stateCode),
-      );
-    } else {
-      state = assertExists(
-        tsMapData.countries.values().find(c => c.code === f.properties.country),
-        'unknown country code: ' + f.properties.country,
-      );
-    }
-    return point(f.geometry.coordinates, {
-      dlcGuard: assertExists(
-        context.dlcGuardSpatialIndex.findClosest(
-          f.geometry.coordinates[0],
-          f.geometry.coordinates[1],
-        ),
-      ).dlcGuard,
-      stateName: state.name,
-      stateCode: state.code,
-      label: f.properties.text,
-      tags: ['scenery'],
-      type: 'scenery',
+      return point(f.geometry.coordinates, {
+        dlcGuard: assertExists(
+          context.dlcGuardSpatialIndex.findClosest(
+            f.geometry.coordinates[0],
+            f.geometry.coordinates[1],
+          ),
+        ).dlcGuard,
+        stateName: state.name,
+        stateCode: state.code,
+        label: f.properties.text,
+        tags: ['scenery'],
+        type: 'scenery',
+      });
     });
-  });
 
   const normalizeCoords = createNormalizeFeature(args.map, 4);
   writeGeojsonFile(

@@ -1113,7 +1113,11 @@ function updateGraphWithFerries(
 
     // establish edges from ferry node to ferry connections
     for (const connection of ferry.connections) {
-      const otherFerryNode = assertExists(nodes.get(connection.nodeUid));
+      const otherFerryNode = nodes.get(connection.nodeUid);
+      if (!otherFerryNode) {
+        // data subsets may not include the other end of a ferry line.
+        continue;
+      }
       ferryGraphNode.forward.push({
         ...createNeighbor(ferryNode, otherFerryNode, 'forward', getDlcGuard),
         distance: connection.distance * 100,
@@ -1178,7 +1182,10 @@ function getNeighborsInDirection(
         dir === 'forward'
           ? nextNode.backwardCountryId
           : nextNode.forwardCountryId,
-      ) ?? context.countriesById.get(1)!; // fallback to California or Austria
+      ) ??
+      context.countriesById.get(1) ?? // fallback to California or Austria
+      // (data subsets may not include country 1)
+      context.countriesById.values().next().value!;
 
     // TODO there's an urban limit value... use it if node is in a city area.
     const speedMph =
