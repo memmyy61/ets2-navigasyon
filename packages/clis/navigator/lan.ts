@@ -4,10 +4,8 @@ import os from 'node:os';
 const virtualAdapterPattern =
   /vethernet|virtualbox|vmware|hyper-v|wsl|loopback|bluetooth|tailscale|zerotier|hamachi|vpn|docker|default switch/i;
 // Adapters that are most likely the Wi-Fi the phone is on.
-const wifiAdapterPattern = /wi-?fi|wlan|wireless|kablosuz/i;
-// Windows mobile hotspot adapter (English / Turkish Windows).
-const hotspotAdapterPattern =
-  /local area connection\*|yerel a[gğ] ba[gğ]lant[ıi]s[ıi]\*/i;
+const wifiAdapterPattern =
+  /wi-?fi|wlan|wireless|kablosuz|yerel ag baglantisi\*|local area connection\*/i;
 
 export interface LanAddress {
   url: string;
@@ -35,13 +33,9 @@ export function getLanAddresses(port = 62840): LanAddress[] {
       if (wifiAdapterPattern.test(adapter)) {
         score -= 10;
       }
-      if (
-        ip.startsWith('192.168.137.') ||
-        hotspotAdapterPattern.test(adapter)
-      ) {
-        // this PC's own Windows mobile hotspot: if it's on, the phone is
-        // most likely connected to it.
-        score -= 20;
+      if (ip.startsWith('192.168.137.')) {
+        // this PC's own Windows mobile hotspot
+        score -= 5;
       }
       if (ip.startsWith('172.')) {
         score += 5;
