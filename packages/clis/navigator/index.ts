@@ -24,9 +24,7 @@ async function main() {
 
   // ETS2 Navigasyon: let phones on the local network reach the server.
   if (process.platform === 'win32' && process.env.NAV_LAN_PROXY !== 'false') {
-    if (await startLanProxy()) {
-      console.log('yerel ag yonlendirmesi acik (port 62840).');
-    }
+    startLanProxy();
   }
 
   // TODO add simple check if client is outdated

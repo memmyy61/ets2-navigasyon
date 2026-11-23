@@ -1,4 +1,5 @@
 import net from 'node:net';
+import os from 'node:os';
 
 /**
  * ETS2 Navigasyon: makes the navigation server (running in WSL) reachable
@@ -6,45 +7,78 @@ import net from 'node:net';
  *
  * WSL (NAT mode) only forwards the server's port to Windows' localhost
  * (often only IPv6 `[::1]`), so other devices can't connect to it. This
- * listens on all IPv4 addresses of this PC on the same port and pipes each
- * connection to localhost. IPv4 0.0.0.0 doesn't clash with WSL's `[::1]`
- * listener.
+ * listens on each of this PC's IPv4 addresses on the same port and pipes
+ * each connection to localhost.
  *
- * Returns `true` if the proxy is listening.
+ * Each address is bound separately (not 0.0.0.0): on Windows a wildcard
+ * listener can end up dual-stack and clash with WSL's `[::1]` listener.
+ * Addresses are re-scanned every 10s, so a hotspot or Wi-Fi that comes up
+ * later is picked up too.
  */
-export function startLanProxy(
-  port = 62840,
-  targetPort = port,
-): Promise<boolean> {
-  return new Promise(resolve => {
-    const server = net.createServer(client => {
-      client.on('error', () => client.destroy());
-      connectToLocalhost(targetPort)
-        .then(upstream => {
-          upstream.on('error', () => {
-            upstream.destroy();
-            client.destroy();
-          });
-          client.on('close', () => upstream.destroy());
-          upstream.on('close', () => client.destroy());
-          client.pipe(upstream);
-          upstream.pipe(client);
-        })
-        .catch(() => client.destroy());
-    });
-    server.once('error', (err: NodeJS.ErrnoException) => {
-      if (err.code === 'EADDRINUSE') {
-        // something (e.g. WSL in mirrored networking mode) already serves
-        // this port on the network; nothing to do.
-        console.log(
-          `yerel ag yonlendirmesi: ${port} zaten kullanimda, gerek yok.`,
+export function startLanProxy(port = 62840, targetPort = port): void {
+  const servers = new Map<string, net.Server>();
+
+  const scan = () => {
+    const current = new Set(getIPv4Addresses());
+    for (const address of current) {
+      if (!servers.has(address)) {
+        const server = createProxyServer(targetPort);
+        servers.set(address, server);
+        server.once('error', (err: NodeJS.ErrnoException) => {
+          console.log(
+            `yonlendirme acilamadi ${address}:${port} (${err.code ?? err.message})`,
+          );
+          // leave it in the map so we don't retry every scan; it's retried
+          // if the address goes away and comes back.
+        });
+        server.listen({ host: address, port }, () =>
+          console.log(`yonlendirme acik: http://${address}:${port}`),
         );
-      } else {
-        console.log('yerel ag yonlendirmesi baslatilamadi:', err.message);
       }
-      resolve(false);
-    });
-    server.listen({ host: '0.0.0.0', port }, () => resolve(true));
+    }
+    for (const [address, server] of servers) {
+      if (!current.has(address)) {
+        server.close();
+        servers.delete(address);
+      }
+    }
+  };
+
+  scan();
+  setInterval(scan, 10_000).unref();
+}
+
+function getIPv4Addresses(): string[] {
+  const addresses: string[] = [];
+  for (const infos of Object.values(os.networkInterfaces())) {
+    for (const info of infos ?? []) {
+      if (
+        info.family === 'IPv4' &&
+        !info.internal &&
+        !info.address.startsWith('169.254.')
+      ) {
+        addresses.push(info.address);
+      }
+    }
+  }
+  return addresses;
+}
+
+function createProxyServer(targetPort: number): net.Server {
+  return net.createServer(client => {
+    client.on('error', () => client.destroy());
+    connectToLocalhost(targetPort)
+      .then(upstream => {
+        upstream.on('error', () => {
+          upstream.destroy();
+          client.destroy();
+        });
+        client.on('close', () => upstream.destroy());
+        upstream.on('close', () => client.destroy());
+        client.pipe(upstream);
+        upstream.pipe(client);
+      })
+      .catch(() => client.destroy());
   });
 }
 
